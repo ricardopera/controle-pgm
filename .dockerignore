@@ -1,0 +1,65 @@
+# =============================================================================
+# Controle PGM - .dockerignore
+# =============================================================================
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+specs/
+
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Environment files
+.env
+.env.*
+local.settings.json
+
+# Test files
+tests/
+**/tests/
+*.test.*
+*.spec.*
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+tmp/

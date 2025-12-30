@@ -1,0 +1,815 @@
+openapi: 3.0.3
+info:
+  title: Controle PGM API
+  description: |
+    API REST para sistema de controle de numeração de documentos da 
+    Procuradoria-Geral do Município de Itajaí.
+  version: 1.0.0
+  contact:
+    name: PGM Itajaí
+    
+servers:
+  - url: https://controlepgm-func.azurewebsites.net/api
+    description: Produção
+  - url: http://localhost:7071/api
+    description: Desenvolvimento local
+
+tags:
+  - name: Auth
+    description: Autenticação e sessão
+  - name: Numbers
+    description: Geração de números de documentos
+  - name: History
+    description: Histórico de números gerados
+  - name: DocumentTypes
+    description: Gerenciamento de tipos de documento
+  - name: Users
+    description: Gerenciamento de usuários
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticar usuário
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login bem-sucedido
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Cookie HttpOnly com JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Encerrar sessão
+      operationId: logout
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout bem-sucedido
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Cookie expirado para limpar sessão
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Obter usuário atual
+      operationId: getCurrentUser
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dados do usuário atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Alterar senha do usuário atual
+      operationId: changePassword
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Senha alterada com sucesso
+        '400':
+          description: Senha atual incorreta ou nova senha inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /numbers:
+    post:
+      tags: [Numbers]
+      summary: Gerar próximo número
+      description: |
+        Gera o próximo número sequencial para o tipo de documento especificado.
+        Operação atômica - garante unicidade mesmo com requisições simultâneas.
+      operationId: generateNumber
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateNumberRequest'
+      responses:
+        '201':
+          description: Número gerado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedNumber'
+        '400':
+          description: Tipo de documento inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tipo de documento não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflito de concorrência (retry recomendado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /history:
+    get:
+      tags: [History]
+      summary: Listar histórico de números
+      operationId: listHistory
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: documentTypeId
+          in: query
+          description: Filtrar por tipo de documento
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          description: Filtrar por usuário
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          description: Data inicial (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Data final (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          description: Número da página (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Itens por página
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Lista de números gerados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+
+  /history/export:
+    get:
+      tags: [History]
+      summary: Exportar histórico em CSV
+      operationId: exportHistory
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: documentTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Arquivo CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: attachment; filename="historico-numeros.csv"
+
+  /document-types:
+    get:
+      tags: [DocumentTypes]
+      summary: Listar tipos de documento
+      operationId: listDocumentTypes
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: includeInactive
+          in: query
+          description: Incluir tipos inativos (apenas admin)
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Lista de tipos de documento
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentType'
+    
+    post:
+      tags: [DocumentTypes]
+      summary: Criar tipo de documento
+      operationId: createDocumentType
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentTypeRequest'
+      responses:
+        '201':
+          description: Tipo criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /document-types/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags: [DocumentTypes]
+      summary: Obter tipo de documento
+      operationId: getDocumentType
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Tipo de documento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags: [DocumentTypes]
+      summary: Atualizar tipo de documento
+      operationId: updateDocumentType
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentTypeRequest'
+      responses:
+        '200':
+          description: Tipo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags: [DocumentTypes]
+      summary: Desativar tipo de documento
+      description: Soft delete - tipo permanece no histórico mas não aparece para seleção
+      operationId: deactivateDocumentType
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Tipo desativado
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar usuários
+      operationId: listUsers
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    
+    post:
+      tags: [Users]
+      summary: Criar usuário
+      operationId: createUser
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithTempPassword'
+        '400':
+          description: Dados inválidos ou email já existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags: [Users]
+      summary: Obter usuário
+      operationId: getUser
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags: [Users]
+      summary: Atualizar usuário
+      operationId: updateUser
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags: [Users]
+      summary: Desativar usuário
+      operationId: deactivateUser
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Usuário desativado
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/reset-password:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Users]
+      summary: Resetar senha do usuário
+      description: Gera nova senha temporária e força troca no próximo login
+      operationId: resetUserPassword
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Senha resetada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TempPasswordResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: JWT em cookie HttpOnly
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: maria.silva@itajai.sc.gov.br
+        password:
+          type: string
+          minLength: 8
+          example: "Senha123"
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/CurrentUser'
+        mustChangePassword:
+          type: boolean
+          description: Se true, usuário deve alterar senha imediatamente
+
+    CurrentUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, user]
+
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          pattern: "^(?=.*[A-Za-z])(?=.*\\d).{8,}$"
+          description: Mínimo 8 caracteres, ao menos 1 letra e 1 número
+
+    GenerateNumberRequest:
+      type: object
+      required: [documentTypeId]
+      properties:
+        documentTypeId:
+          type: string
+          format: uuid
+
+    GeneratedNumber:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID do registro de log
+        number:
+          type: integer
+          example: 42
+        year:
+          type: integer
+          example: 2025
+        formattedNumber:
+          type: string
+          example: "42/2025"
+        documentType:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              example: "Ofício"
+        generatedAt:
+          type: string
+          format: date-time
+
+    HistoryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryItem'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    HistoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        formattedNumber:
+          type: string
+          example: "42/2025"
+        documentTypeName:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+          format: email
+        generatedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+
+    DocumentType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateDocumentTypeRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        prefix:
+          type: string
+          minLength: 1
+          maxLength: 10
+        sortOrder:
+          type: integer
+          minimum: 1
+
+    UpdateDocumentTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        prefix:
+          type: string
+          minLength: 1
+          maxLength: 10
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 1
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, user]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UserWithTempPassword:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            temporaryPassword:
+              type: string
+              description: Senha temporária gerada (mostrar apenas 1x)
+
+    CreateUserRequest:
+      type: object
+      required: [email, name]
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        role:
+          type: string
+          enum: [admin, user]
+          default: user
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        role:
+          type: string
+          enum: [admin, user]
+        isActive:
+          type: boolean
+
+    TempPasswordResponse:
+      type: object
+      properties:
+        temporaryPassword:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "INVALID_CREDENTIALS"
+            message:
+              type: string
+              example: "E-mail ou senha incorretos"
+            details:
+              type: object
+              additionalProperties: true
+
+  responses:
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "UNAUTHORIZED"
+              message: "Sessão expirada ou inválida"
+
+    Forbidden:
+      description: Sem permissão
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "FORBIDDEN"
+              message: "Você não tem permissão para esta operação"
+
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "NOT_FOUND"
+              message: "Recurso não encontrado"

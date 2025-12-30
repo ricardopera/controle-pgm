@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AZURE_TABLES_CONNECTION_STRING": "UseDevelopmentStorage=true",
+    "JWT_SECRET": "your-super-secret-jwt-key-change-in-production-min-32-chars",
+    "JWT_EXPIRATION_HOURS": "8",
+    "CORS_ORIGINS": "http://localhost:5173",
+    "ENVIRONMENT": "development",
+    "TIMEZONE": "America/Sao_Paulo"
+  },
+  "Host": {
+    "CORS": "*",
+    "CORSCredentials": true
+  }
+}

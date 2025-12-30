@@ -1,0 +1,177 @@
+"""Document Type service for Controle PGM."""
+
+from datetime import datetime
+from uuid import uuid4
+
+from azure.core.exceptions import ResourceNotFoundError
+from azure.data.tables import UpdateMode
+
+from backend.core.exceptions import ConflictError, NotFoundError
+from backend.core.tables import get_document_types_table
+from backend.models.document_type import (
+    DocumentTypeCreate,
+    DocumentTypeEntity,
+    DocumentTypeUpdate,
+)
+
+
+class DocumentTypeService:
+    """Service for document type operations."""
+
+    @staticmethod
+    def list_all() -> list[DocumentTypeEntity]:
+        """List all document types.
+
+        Returns:
+            List of all DocumentTypeEntity objects.
+        """
+        table = get_document_types_table()
+        entities = list(table.query_entities(query_filter="PartitionKey eq 'DOCTYPE'"))
+        return [DocumentTypeEntity(**entity) for entity in entities]
+
+    @staticmethod
+    def list_active() -> list[DocumentTypeEntity]:
+        """List all active document types.
+
+        Returns:
+            List of active DocumentTypeEntity objects, sorted by code.
+        """
+        table = get_document_types_table()
+        entities = list(
+            table.query_entities(query_filter="PartitionKey eq 'DOCTYPE' and IsActive eq true")
+        )
+        doc_types = [DocumentTypeEntity(**entity) for entity in entities]
+        return sorted(doc_types, key=lambda x: x.Code)
+
+    @staticmethod
+    def get_by_id(doc_type_id: str) -> DocumentTypeEntity | None:
+        """Get a document type by ID.
+
+        Args:
+            doc_type_id: Document type's unique ID (RowKey).
+
+        Returns:
+            DocumentTypeEntity if found, None otherwise.
+        """
+        table = get_document_types_table()
+
+        try:
+            entity = table.get_entity(partition_key="DOCTYPE", row_key=doc_type_id)
+            return DocumentTypeEntity(**entity)
+        except ResourceNotFoundError:
+            return None
+
+    @staticmethod
+    def get_by_code(code: str) -> DocumentTypeEntity | None:
+        """Get a document type by code.
+
+        Args:
+            code: Document type code (e.g., "OF").
+
+        Returns:
+            DocumentTypeEntity if found, None otherwise.
+        """
+        table = get_document_types_table()
+
+        query_filter = f"Code eq '{code.upper()}'"
+        entities = list(table.query_entities(query_filter=query_filter))
+
+        if not entities:
+            return None
+
+        return DocumentTypeEntity(**entities[0])
+
+    @staticmethod
+    def create(data: DocumentTypeCreate) -> DocumentTypeEntity:
+        """Create a new document type.
+
+        Args:
+            data: Document type creation data.
+
+        Returns:
+            Created DocumentTypeEntity.
+
+        Raises:
+            ConflictError: If code already exists.
+        """
+        # Check if code already exists
+        existing = DocumentTypeService.get_by_code(data.code)
+        if existing:
+            raise ConflictError(f"Tipo de documento com código '{data.code}' já existe")
+
+        table = get_document_types_table()
+        now = datetime.utcnow()
+
+        entity = DocumentTypeEntity(
+            PartitionKey="DOCTYPE",
+            RowKey=str(uuid4()),
+            Code=data.code.upper(),
+            Name=data.name,
+            IsActive=True,
+            CreatedAt=now,
+            UpdatedAt=now,
+        )
+
+        table.create_entity(entity.model_dump())
+
+        return entity
+
+    @staticmethod
+    def update(doc_type_id: str, data: DocumentTypeUpdate) -> DocumentTypeEntity:
+        """Update a document type.
+
+        Args:
+            doc_type_id: Document type's unique ID.
+            data: Update data.
+
+        Returns:
+            Updated DocumentTypeEntity.
+
+        Raises:
+            NotFoundError: If document type not found.
+        """
+        doc_type = DocumentTypeService.get_by_id(doc_type_id)
+        if not doc_type:
+            raise NotFoundError("Tipo de documento não encontrado")
+
+        table = get_document_types_table()
+
+        # Update only provided fields
+        updates = data.model_dump(exclude_unset=True)
+        entity_dict = doc_type.model_dump()
+        entity_dict.update(updates)
+        entity_dict["UpdatedAt"] = datetime.utcnow()
+
+        table.update_entity(entity_dict, mode=UpdateMode.REPLACE)
+
+        return DocumentTypeEntity(**entity_dict)
+
+    @staticmethod
+    def deactivate(doc_type_id: str) -> DocumentTypeEntity:
+        """Deactivate a document type.
+
+        Args:
+            doc_type_id: Document type's unique ID.
+
+        Returns:
+            Updated DocumentTypeEntity.
+
+        Raises:
+            NotFoundError: If document type not found.
+        """
+        return DocumentTypeService.update(doc_type_id, DocumentTypeUpdate(is_active=False))
+
+    @staticmethod
+    def activate(doc_type_id: str) -> DocumentTypeEntity:
+        """Activate a document type.
+
+        Args:
+            doc_type_id: Document type's unique ID.
+
+        Returns:
+            Updated DocumentTypeEntity.
+
+        Raises:
+            NotFoundError: If document type not found.
+        """
+        return DocumentTypeService.update(doc_type_id, DocumentTypeUpdate(is_active=True))
