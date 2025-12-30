@@ -2,6 +2,7 @@
 
 from uuid import uuid4
 
+from azure.core import MatchConditions
 from azure.core.exceptions import ResourceNotFoundError
 from azure.data.tables import UpdateMode
 
@@ -46,7 +47,13 @@ class NumberService:
         try:
             entity = table.get_entity(partition_key=partition_key, row_key="SEQUENCE")
             seq = SequenceEntity(**entity)
-            seq._etag = entity.get("_metadata", {}).get("etag")
+            # Try all possible locations for etag
+            etag = entity.get("etag")
+            if not etag and hasattr(entity, "metadata"):
+                etag = entity.metadata.get("etag")
+            if not etag:
+                etag = entity.get("_metadata", {}).get("etag")
+            seq._etag = etag
             return seq
         except ResourceNotFoundError:
             # Create new sequence starting at 0
@@ -64,7 +71,13 @@ class NumberService:
             # Re-fetch to get ETag
             entity = table.get_entity(partition_key=partition_key, row_key="SEQUENCE")
             seq = SequenceEntity(**entity)
-            seq._etag = entity.get("_metadata", {}).get("etag")
+            # Try all possible locations for etag
+            etag = entity.get("etag")
+            if not etag and hasattr(entity, "metadata"):
+                etag = entity.metadata.get("etag")
+            if not etag:
+                etag = entity.get("_metadata", {}).get("etag")
+            seq._etag = etag
             return seq
 
     @staticmethod
@@ -122,7 +135,7 @@ class NumberService:
                     updated_entity,
                     mode=UpdateMode.REPLACE,
                     etag=seq._etag,
-                    match_condition="IfMatch",
+                    match_condition=MatchConditions.IfNotModified,
                 )
 
                 # Log the generation
@@ -235,8 +248,8 @@ class NumberService:
             Year=year,
             Number=number,
             Action=action,
-            UserId=user.user_id,
-            UserName=user.name,
+            UserId=user["user_id"],
+            UserName=user["name"],
             PreviousNumber=previous_number,
             Notes=notes,
             CreatedAt=now,

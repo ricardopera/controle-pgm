@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, TypedDict
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -25,10 +25,10 @@ class UserEntity(BaseModel):
     CreatedAt: datetime
     UpdatedAt: datetime
 
-    class Config:
-        """Pydantic model configuration."""
-
-        from_attributes = True
+    model_config = {
+        "from_attributes": True,
+        "extra": "ignore"
+    }
 
 
 class LoginRequest(BaseModel):
@@ -99,11 +99,11 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=8)
 
 
-class CurrentUser(BaseModel):
+class CurrentUser(TypedDict):
     """Current authenticated user info from JWT."""
 
     user_id: str
     email: str
     name: str
     role: Literal["admin", "user"]
-    must_change_password: bool = False
+    must_change_password: bool

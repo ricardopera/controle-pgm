@@ -75,7 +75,9 @@ def validate_password_policy(password: str) -> None:
         raise PasswordPolicyError("Senha deve conter pelo menos 1 número")
 
 
-def create_token(user_id: str, email: str, role: str, name: str) -> str:
+def create_token(
+    user_id: str, email: str, role: str, name: str, must_change_password: bool = False
+) -> str:
     """
     Create a JWT token for the user.
 
@@ -84,6 +86,7 @@ def create_token(user_id: str, email: str, role: str, name: str) -> str:
         email: User's email address.
         role: User's role (admin or user).
         name: User's display name.
+        must_change_password: Whether the user must change their password.
 
     Returns:
         Encoded JWT token string.
@@ -96,6 +99,7 @@ def create_token(user_id: str, email: str, role: str, name: str) -> str:
         "email": email,
         "role": role,
         "name": name,
+        "must_change_password": must_change_password,
         "iat": now,
         "exp": expiration,
     }
@@ -146,6 +150,7 @@ def extract_user_from_token(token: str) -> dict[str, Any]:
         "email": payload["email"],
         "role": payload["role"],
         "name": payload["name"],
+        "must_change_password": payload.get("must_change_password", False),
     }
 
 

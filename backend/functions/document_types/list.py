@@ -40,7 +40,7 @@ def list_document_types(req: func.HttpRequest, current_user: CurrentUser) -> fun
     # Check if admin wants all document types
     include_all = req.params.get("all", "").lower() == "true"
 
-    if include_all and current_user.role == "admin":
+    if include_all and current_user["role"] == "admin":
         doc_types = DocumentTypeService.list_all()
     else:
         doc_types = DocumentTypeService.list_active()

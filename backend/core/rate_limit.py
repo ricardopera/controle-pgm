@@ -81,7 +81,7 @@ def rate_limit(
                 key = key_func(req)
             elif "current_user" in kwargs:
                 # Use user_id if authenticated
-                key = f"user:{kwargs['current_user'].user_id}"
+                key = f"user:{kwargs['current_user']['user_id']}"
             else:
                 # Fall back to IP address
                 key = f"ip:{req.headers.get('X-Forwarded-For', 'unknown')}"

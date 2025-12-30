@@ -65,7 +65,7 @@ def update_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
         # Check if trying to remove admin role
         if body["role"] == "user" and user.Role == "admin":
             # Use the remove_admin_role method for safety
-            UserService.remove_admin_role(user_id, current_user.user_id)
+            UserService.remove_admin_role(user_id, current_user["user_id"])
             updates = {}  # Already updated
         elif body["role"] == "admin" and user.Role == "user":
             updates["Role"] = "admin"
@@ -73,7 +73,7 @@ def update_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
     if "is_active" in body:
         if not body["is_active"] and user.IsActive:
             # Use deactivate method for safety
-            UserService.deactivate(user_id, current_user.user_id)
+            UserService.deactivate(user_id, current_user["user_id"])
             updates = {}  # Already updated
         elif body["is_active"] and not user.IsActive:
             updates["IsActive"] = True

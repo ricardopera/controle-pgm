@@ -24,7 +24,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
-import type { DocumentType } from '@/types';
+import type { DocumentType, DocumentTypesListResponse } from '@/types';
 
 interface DocumentTypeFormData {
   code: string;
@@ -53,8 +53,8 @@ export function DocumentTypesList() {
   async function loadDocumentTypes() {
     try {
       setLoading(true);
-      const response = await api.get<DocumentType[]>('/api/document-types?all=true');
-      setDocumentTypes(response);
+      const response = await api.get<DocumentTypesListResponse>('/api/document-types?all=true');
+      setDocumentTypes(response.items);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar tipos de documento';
       toast.error(message);

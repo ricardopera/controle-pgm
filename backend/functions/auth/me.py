@@ -31,10 +31,10 @@ def me(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpResponse:
     """
     return create_json_response(
         {
-            "user_id": current_user.user_id,
-            "email": current_user.email,
-            "name": current_user.name,
-            "role": current_user.role,
-            "must_change_password": current_user.must_change_password,
+            "user_id": current_user["user_id"],
+            "email": current_user["email"],
+            "name": current_user["name"],
+            "role": current_user["role"],
+            "must_change_password": current_user.get("must_change_password", False),
         }
     )

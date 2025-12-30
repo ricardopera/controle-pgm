@@ -34,7 +34,7 @@ class UserService:
 
         # Query by email (case-insensitive)
         query_filter = f"Email eq '{email.lower()}'"
-        entities = list(table.query_entities(query_filter=query_filter, select=["*"]))
+        entities = list(table.query_entities(query_filter=query_filter))
 
         if not entities:
             return None

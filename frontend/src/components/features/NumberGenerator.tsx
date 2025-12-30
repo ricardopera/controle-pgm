@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import type { DocumentType, GeneratedNumber } from '@/types';
+import type { DocumentType, DocumentTypesListResponse, GeneratedNumber } from '@/types';
 
 export function NumberGenerator() {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
@@ -52,12 +52,12 @@ export function NumberGenerator() {
     try {
       setLoadingTypes(true);
       setError(null);
-      const response = await api.get<DocumentType[]>('/api/document-types');
-      setDocumentTypes(response);
+      const response = await api.get<DocumentTypesListResponse>('/api/document-types');
+      setDocumentTypes(response.items);
       
       // Auto-select first type if available
-      if (response.length > 0 && !selectedType) {
-        setSelectedType(response[0].code);
+      if (response.items.length > 0 && !selectedType) {
+        setSelectedType(response.items[0].code);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar tipos de documento';

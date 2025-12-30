@@ -64,6 +64,7 @@ def login(req: func.HttpRequest) -> func.HttpResponse:
 
     # Return response with auth cookie
     response = create_json_response(response_data.model_dump(), status_code=200)
-    response.headers["Set-Cookie"] = create_auth_cookie(token)
+    cookie_headers = create_auth_cookie(token)
+    response.headers["Set-Cookie"] = cookie_headers["Set-Cookie"]
 
     return response

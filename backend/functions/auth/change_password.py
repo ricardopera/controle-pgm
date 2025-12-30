@@ -46,13 +46,13 @@ def change_password(req: func.HttpRequest, current_user: CurrentUser) -> func.Ht
 
     # Change password
     UserService.change_password(
-        user_id=current_user.user_id,
+        user_id=current_user["user_id"],
         current_password=change_data.current_password,
         new_password=change_data.new_password,
     )
 
     # Get updated user
-    user = UserService.get_by_id(current_user.user_id)
+    user = UserService.get_by_id(current_user["user_id"])
 
     # Create new token without must_change_password flag
     token = create_token(
@@ -65,6 +65,7 @@ def change_password(req: func.HttpRequest, current_user: CurrentUser) -> func.Ht
 
     # Return response with updated cookie
     response = create_json_response({"message": "Senha alterada com sucesso"}, status_code=200)
-    response.headers["Set-Cookie"] = create_auth_cookie(token)
+    cookie_headers = create_auth_cookie(token)
+    response.headers["Set-Cookie"] = cookie_headers["Set-Cookie"]
 
     return response

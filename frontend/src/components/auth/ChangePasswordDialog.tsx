@@ -71,7 +71,10 @@ export function ChangePasswordDialog({ open }: ChangePasswordDialogProps) {
     setIsLoading(true);
 
     try {
-      await api.auth.changePassword(data.currentPassword, data.newPassword);
+      await api.post('/api/auth/change-password', {
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
       updateUser({ must_change_password: false });
     } catch (err) {
       if (err instanceof ApiError) {

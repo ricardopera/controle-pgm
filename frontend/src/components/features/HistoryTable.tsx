@@ -75,8 +75,8 @@ export function HistoryTable({ onExport }: HistoryTableProps) {
 
   const loadDocumentTypes = async () => {
     try {
-      const response = await api.get<DocumentType[]>('/api/document-types?all=true');
-      setDocumentTypes(response);
+      const response = await api.get<{ items: DocumentType[] }>('/api/document-types?all=true');
+      setDocumentTypes(response.items);
     } catch {
       // Silently fail - filters will just not show types
     }

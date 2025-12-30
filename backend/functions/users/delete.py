@@ -40,7 +40,7 @@ def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
         raise NotFoundError("Usuário não encontrado")
 
     # Deactivate user (handles admin protection internally)
-    UserService.deactivate(user_id, current_user.user_id)
+    UserService.deactivate(user_id, current_user["user_id"])
 
     return create_json_response(
         {"success": True, "message": "Usuário desativado com sucesso"}, status_code=200

@@ -21,10 +21,10 @@ class DocumentTypeEntity(BaseModel):
     CreatedAt: datetime
     UpdatedAt: datetime
 
-    class Config:
-        """Pydantic model configuration."""
-
-        from_attributes = True
+    model_config = {
+        "from_attributes": True,
+        "extra": "ignore"
+    }
 
 
 class DocumentTypeCreate(BaseModel):
