@@ -9,6 +9,8 @@ from .me import bp as me_bp
 
 __all__ = ["auth_bp", "change_password_bp", "login_bp", "logout_bp", "me_bp"]
 
+__all__ = ["auth_bp", "change_password_bp", "login_bp", "logout_bp", "me_bp"]
+
 # Create combined blueprint for all auth endpoints
 auth_bp = func.Blueprint()
 
