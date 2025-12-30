@@ -6,9 +6,9 @@ from uuid import uuid4
 from azure.core.exceptions import ResourceNotFoundError
 from azure.data.tables import UpdateMode
 
-from backend.core.exceptions import ConflictError, NotFoundError
-from backend.core.tables import get_document_types_table
-from backend.models.document_type import (
+from core.exceptions import ConflictError, NotFoundError
+from core.tables import get_document_types_table
+from models.document_type import (
     DocumentTypeCreate,
     DocumentTypeEntity,
     DocumentTypeUpdate,

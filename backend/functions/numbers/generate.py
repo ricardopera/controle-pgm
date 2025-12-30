@@ -2,16 +2,16 @@
 
 import azure.functions as func
 
-from backend.core.middleware import (
+from core.middleware import (
     create_json_response,
     get_request_body,
     handle_errors,
     require_auth,
 )
-from backend.core.rate_limit import rate_limit
-from backend.models.sequence import GenerateNumberRequest, GenerateNumberResponse
-from backend.models.user import CurrentUser
-from backend.services.number_service import NumberService
+from core.rate_limit import rate_limit
+from models.sequence import GenerateNumberRequest, GenerateNumberResponse
+from models.user import CurrentUser
+from services.number_service import NumberService
 
 bp = func.Blueprint()
 

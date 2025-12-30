@@ -2,10 +2,10 @@
 
 import azure.functions as func
 
-from backend.core.auth import create_auth_cookie, create_token
-from backend.core.middleware import create_json_response, get_request_body, handle_errors
-from backend.models.user import LoginRequest, LoginResponse
-from backend.services.user_service import UserService
+from core.auth import create_auth_cookie, create_token
+from core.middleware import create_json_response, get_request_body, handle_errors
+from models.user import LoginRequest, LoginResponse
+from services.user_service import UserService
 
 # Create blueprint for auth functions
 bp = func.Blueprint()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import inspect
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
@@ -74,6 +75,11 @@ def require_auth(func_handler: F) -> F:
         except ControlePGMError as e:
             return create_error_response(e)
 
+    # Remove 'current_user' from signature so Azure Functions doesn't expect it as a binding
+    sig = inspect.signature(func_handler)
+    params = [p for p in sig.parameters.values() if p.name != "current_user"]
+    wrapper.__signature__ = sig.replace(parameters=params)
+
     return wrapper  # type: ignore
 
 
@@ -112,6 +118,11 @@ def require_admin(func_handler: F) -> F:
 
         except ControlePGMError as e:
             return create_error_response(e)
+
+    # Remove 'current_user' from signature so Azure Functions doesn't expect it as a binding
+    sig = inspect.signature(func_handler)
+    params = [p for p in sig.parameters.values() if p.name != "current_user"]
+    wrapper.__signature__ = sig.replace(parameters=params)
 
     return wrapper  # type: ignore
 

@@ -5,16 +5,16 @@ from uuid import uuid4
 from azure.core.exceptions import ResourceNotFoundError
 from azure.data.tables import UpdateMode
 
-from backend.core.config import get_brazil_now
-from backend.core.exceptions import (
+from core.config import get_brazil_now
+from core.exceptions import (
     NotFoundError,
     SequenceGenerationError,
 )
-from backend.core.tables import get_number_logs_table, get_sequences_table
-from backend.models.number_log import NumberLogEntity
-from backend.models.sequence import SequenceEntity
-from backend.models.user import CurrentUser
-from backend.services.document_type_service import DocumentTypeService
+from core.tables import get_number_logs_table, get_sequences_table
+from models.number_log import NumberLogEntity
+from models.sequence import SequenceEntity
+from models.user import CurrentUser
+from .document_type_service import DocumentTypeService
 
 
 class NumberService:

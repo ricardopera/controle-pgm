@@ -2,8 +2,8 @@
 
 import azure.functions as func
 
-from backend.core.auth import create_logout_cookie
-from backend.core.middleware import create_json_response, handle_errors
+from core.auth import create_logout_cookie
+from core.middleware import create_json_response, handle_errors
 
 # Create blueprint for logout
 bp = func.Blueprint()

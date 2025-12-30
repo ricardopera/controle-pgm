@@ -1,13 +1,13 @@
 """Pydantic models for Controle PGM."""
 
-from backend.models.document_type import (
+from .document_type import (
     DocumentTypeCreate,
     DocumentTypeEntity,
     DocumentTypeListResponse,
     DocumentTypeResponse,
     DocumentTypeUpdate,
 )
-from backend.models.number_log import (
+from .number_log import (
     CorrectionRequest,
     CorrectionResponse,
     HistoryFilter,
@@ -15,14 +15,14 @@ from backend.models.number_log import (
     NumberLogEntity,
     NumberLogResponse,
 )
-from backend.models.sequence import (
+from .sequence import (
     GenerateNumberRequest,
     GenerateNumberResponse,
     SequenceEntity,
     SequenceListResponse,
     SequenceResponse,
 )
-from backend.models.user import (
+from .user import (
     ChangePasswordRequest,
     CurrentUser,
     LoginRequest,

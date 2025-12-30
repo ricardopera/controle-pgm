@@ -6,15 +6,15 @@ from uuid import uuid4
 from azure.core.exceptions import ResourceNotFoundError
 from azure.data.tables import UpdateMode
 
-from backend.core.auth import hash_password, verify_password
-from backend.core.exceptions import (
+from core.auth import hash_password, verify_password
+from core.exceptions import (
     ConflictError,
     ForbiddenError,
     InvalidCredentialsError,
     NotFoundError,
 )
-from backend.core.tables import get_users_table
-from backend.models.user import UserCreate, UserEntity
+from core.tables import get_users_table
+from models.user import UserCreate, UserEntity
 
 
 class UserService:

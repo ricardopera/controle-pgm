@@ -2,14 +2,14 @@
 
 import azure.functions as func
 
-from backend.core.middleware import (
+from core.middleware import (
     create_json_response,
     handle_errors,
     require_auth,
 )
-from backend.models.number_log import HistoryFilter
-from backend.models.user import CurrentUser
-from backend.services.history_service import HistoryService
+from models.number_log import HistoryFilter
+from models.user import CurrentUser
+from services.history_service import HistoryService
 
 bp = func.Blueprint()
 

@@ -12,7 +12,7 @@ from typing import Any, TypeVar
 
 import azure.functions as func
 
-from backend.core.config import settings
+from .config import settings
 
 F = TypeVar("F", bound=Callable[..., Any])
 

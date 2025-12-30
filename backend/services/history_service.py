@@ -5,8 +5,8 @@ from __future__ import annotations
 import csv
 import io
 
-from backend.core.tables import get_number_logs_table
-from backend.models.number_log import (
+from core.tables import get_number_logs_table
+from models.number_log import (
     HistoryFilter,
     HistoryResponse,
     NumberLogEntity,

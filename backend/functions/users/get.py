@@ -2,14 +2,14 @@
 
 import azure.functions as func
 
-from backend.core.exceptions import NotFoundError
-from backend.core.middleware import (
+from core.exceptions import NotFoundError
+from core.middleware import (
     create_json_response,
     handle_errors,
     require_admin,
 )
-from backend.models.user import CurrentUser, UserResponse
-from backend.services.user_service import UserService
+from models.user import CurrentUser, UserResponse
+from services.user_service import UserService
 
 bp = func.Blueprint()
 

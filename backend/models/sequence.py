@@ -6,7 +6,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from backend.core.config import get_current_year
+from core.config import get_current_year
 
 
 class SequenceEntity(BaseModel):

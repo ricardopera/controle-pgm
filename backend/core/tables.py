@@ -40,16 +40,16 @@ def get_table_client(table_name: str) -> TableClient:
     Returns:
         TableClient instance for the specified table.
     """
+    import contextlib
+
     service_client = get_table_service_client()
     table_client = service_client.get_table_client(table_name)
 
     # Create table if it doesn't exist (idempotent)
-    try:
+    # Table might already exist or we might not have permissions
+    # In production, tables should be created via Bicep
+    with contextlib.suppress(Exception):
         service_client.create_table_if_not_exists(table_name)
-    except Exception:
-        # Table might already exist or we might not have permissions
-        # In production, tables should be created via Bicep
-        pass
 
     return table_client
 

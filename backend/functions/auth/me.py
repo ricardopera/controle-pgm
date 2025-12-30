@@ -2,8 +2,8 @@
 
 import azure.functions as func
 
-from backend.core.middleware import create_json_response, handle_errors, require_auth
-from backend.models.user import CurrentUser
+from core.middleware import create_json_response, handle_errors, require_auth
+from models.user import CurrentUser
 
 # Create blueprint for me endpoint
 bp = func.Blueprint()

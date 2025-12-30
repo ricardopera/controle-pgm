@@ -2,14 +2,14 @@
 
 import azure.functions as func
 
-from backend.core.middleware import (
+from core.middleware import (
     create_json_response,
     handle_errors,
     require_admin,
 )
-from backend.models.document_type import DocumentTypeResponse
-from backend.models.user import CurrentUser
-from backend.services.document_type_service import DocumentTypeService
+from models.document_type import DocumentTypeResponse
+from models.user import CurrentUser
+from services.document_type_service import DocumentTypeService
 
 bp = func.Blueprint()
 

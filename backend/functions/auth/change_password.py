@@ -2,15 +2,15 @@
 
 import azure.functions as func
 
-from backend.core.auth import create_auth_cookie, create_token, validate_password_policy
-from backend.core.middleware import (
+from core.auth import create_auth_cookie, create_token, validate_password_policy
+from core.middleware import (
     create_json_response,
     get_request_body,
     handle_errors,
     require_auth,
 )
-from backend.models.user import ChangePasswordRequest, CurrentUser
-from backend.services.user_service import UserService
+from models.user import ChangePasswordRequest, CurrentUser
+from services.user_service import UserService
 
 # Create blueprint for change password
 bp = func.Blueprint()
