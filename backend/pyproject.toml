@@ -8,6 +8,8 @@ readme = "README.md"
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+
+[tool.ruff.lint]
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -16,13 +18,13 @@ select = [
     "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
     "B904",   # raise without from inside except
+    "B007",   # Loop control variable not used (intentional in retry patterns)
 ]
 exclude = [
     ".git",
@@ -33,13 +35,7 @@ exclude = [
     ".ruff_cache",
 ]
 
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["core", "models", "services", "functions"]
 combine-as-imports = true
 
