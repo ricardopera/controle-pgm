@@ -74,11 +74,14 @@ jobs:
 
             # Create a GitHub Actions annotation with a short, URL-escaped tail of the output.
             python3 - <<'PY'
-            import subprocess
-
-            tail = subprocess.check_output(["bash", "-lc", "tail -n 60 vitest-output.txt"], text=True)
-            msg = tail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
-            print(f"::error title=Vitest failed::{msg}")
+            try:
+                with open("vitest-output.txt", "r") as f:
+                    lines = f.readlines()
+                    tail = "".join(lines[-60:])
+                    msg = tail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                    print(f"::error title=Vitest failed::{msg}")
+            except Exception as e:
+                print(f"::error title=Debug Script Failed::{str(e)}")
             PY
 
             exit "$exit_code"
