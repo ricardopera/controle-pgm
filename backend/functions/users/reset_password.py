@@ -2,13 +2,15 @@
 
 import azure.functions as func
 
-from core.exceptions import NotFoundError
+from core.exceptions import BadRequestError, NotFoundError
 from core.middleware import (
     create_json_response,
     handle_errors,
     require_admin,
 )
+from core.security import is_valid_uuid
 from models.user import CurrentUser
+from services.audit_service import AuditAction, AuditService
 from services.user_service import UserService
 
 bp = func.Blueprint()
@@ -32,9 +34,13 @@ def reset_user_password(req: func.HttpRequest, current_user: CurrentUser) -> fun
         }
 
     Errors:
+        400 - Invalid user ID format
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
+    
+    if not is_valid_uuid(user_id):
+        raise BadRequestError("ID de usuário inválido")
 
     # Check if user exists
     user = UserService.get_by_id(user_id)
@@ -43,6 +49,15 @@ def reset_user_password(req: func.HttpRequest, current_user: CurrentUser) -> fun
 
     # Reset password and get temporary one
     temp_password = UserService.reset_password(user_id)
+
+    # Log password reset
+    AuditService.log_user_action(
+        action=AuditAction.USER_PASSWORD_RESET,
+        actor=current_user,
+        target_user_id=user_id,
+        target_user_email=user.Email,
+        ip_address=req.headers.get("X-Forwarded-For"),
+    )
 
     return create_json_response(
         {

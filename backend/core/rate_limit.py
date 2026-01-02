@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from collections import defaultdict
 from collections.abc import Callable
@@ -15,17 +16,72 @@ import azure.functions as func
 from .config import settings
 
 F = TypeVar("F", bound=Callable[..., Any])
+logger = logging.getLogger(__name__)
 
 # In-memory rate limiter (resets on function cold start)
-# For production, consider using Azure Redis Cache
+# For production, Redis is used when REDIS_CONNECTION_STRING is configured
 _rate_limit_store: dict[str, list[float]] = defaultdict(list)
 _rate_limit_lock = Lock()
+
+# Redis client (lazy initialization)
+_redis_client = None
+
+
+def _get_redis_client():
+    """Get or create Redis client for rate limiting."""
+    global _redis_client
+    if _redis_client is None and settings.use_redis_rate_limit:
+        try:
+            import redis
+            _redis_client = redis.from_url(
+                settings.redis_connection_string,
+                decode_responses=True
+            )
+            _redis_client.ping()  # Test connection
+            logger.info("Redis rate limiting enabled")
+        except Exception as e:
+            logger.warning(f"Failed to connect to Redis, using in-memory rate limiting: {e}")
+            _redis_client = False  # Mark as failed
+    return _redis_client if _redis_client else None
 
 
 def _clean_old_requests(key: str, window_seconds: int) -> None:
     """Remove requests outside the current window."""
     cutoff = time.time() - window_seconds
     _rate_limit_store[key] = [t for t in _rate_limit_store[key] if t > cutoff]
+
+
+def _check_rate_limit_memory(key: str, max_requests: int, window_seconds: int) -> bool:
+    """Check rate limit using in-memory store."""
+    with _rate_limit_lock:
+        _clean_old_requests(key, window_seconds)
+
+        if len(_rate_limit_store[key]) >= max_requests:
+            return False
+
+        _rate_limit_store[key].append(time.time())
+        return True
+
+
+def _check_rate_limit_redis(key: str, max_requests: int, window_seconds: int) -> bool:
+    """Check rate limit using Redis."""
+    redis_client = _get_redis_client()
+    if not redis_client:
+        return _check_rate_limit_memory(key, max_requests, window_seconds)
+
+    try:
+        redis_key = f"rate_limit:{key}"
+        current = redis_client.incr(redis_key)
+        
+        if current == 1:
+            # First request, set expiration
+            redis_client.expire(redis_key, window_seconds)
+        
+        return current <= max_requests
+    except Exception as e:
+        logger.error(f"Redis rate limit error: {e}")
+        # Fallback to memory
+        return _check_rate_limit_memory(key, max_requests, window_seconds)
 
 
 def _check_rate_limit(key: str, max_requests: int, window_seconds: int) -> bool:
@@ -40,14 +96,9 @@ def _check_rate_limit(key: str, max_requests: int, window_seconds: int) -> bool:
     Returns:
         True if request is allowed, False if rate limited
     """
-    with _rate_limit_lock:
-        _clean_old_requests(key, window_seconds)
-
-        if len(_rate_limit_store[key]) >= max_requests:
-            return False
-
-        _rate_limit_store[key].append(time.time())
-        return True
+    if settings.use_redis_rate_limit:
+        return _check_rate_limit_redis(key, max_requests, window_seconds)
+    return _check_rate_limit_memory(key, max_requests, window_seconds)
 
 
 def rate_limit(

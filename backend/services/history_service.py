@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 
+from core.security import sanitize_odata_string
 from core.tables import get_number_logs_table
 from models.number_log import (
     HistoryFilter,
@@ -29,25 +30,29 @@ class HistoryService:
         """
         table = get_number_logs_table()
 
-        # Build OData filter query
+        # Build OData filter query with sanitized inputs
         filter_parts = []
 
         if filters.document_type_code and filters.year:
             # Query specific partition
-            partition_key = f"{filters.document_type_code}_{filters.year}"
+            safe_code = sanitize_odata_string(filters.document_type_code)
+            partition_key = f"{safe_code}_{filters.year}"
             filter_parts.append(f"PartitionKey eq '{partition_key}'")
         elif filters.document_type_code:
             # Query by document type prefix
-            filter_parts.append(f"DocumentTypeCode eq '{filters.document_type_code}'")
+            safe_code = sanitize_odata_string(filters.document_type_code)
+            filter_parts.append(f"DocumentTypeCode eq '{safe_code}'")
         elif filters.year:
-            # Query by year
+            # Query by year (integer, no sanitization needed)
             filter_parts.append(f"Year eq {filters.year}")
 
         if filters.user_id:
-            filter_parts.append(f"UserId eq '{filters.user_id}'")
+            safe_user_id = sanitize_odata_string(filters.user_id)
+            filter_parts.append(f"UserId eq '{safe_user_id}'")
 
         if filters.action:
-            filter_parts.append(f"Action eq '{filters.action}'")
+            safe_action = sanitize_odata_string(filters.action)
+            filter_parts.append(f"Action eq '{safe_action}'")
 
         # Combine filters
         filter_query = " and ".join(filter_parts) if filter_parts else None

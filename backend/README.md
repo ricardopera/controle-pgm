@@ -199,6 +199,7 @@ python -m pytest tests/integration/ -v
 | Variável | Descrição | Default |
 |----------|-----------|---------|
 | `AZURE_TABLES_CONNECTION_STRING` | Connection string Azure Tables | `UseDevelopmentStorage=true` |
+| `REDIS_CONNECTION_STRING` | Connection string Redis (rate limiting) | `` (usa memória) |
 | `JWT_SECRET` | Chave secreta JWT | Deve ter 32+ caracteres |
 | `JWT_EXPIRATION_HOURS` | Expiração do token | `8` |
 | `CORS_ORIGINS` | Origens permitidas | `http://localhost:5173` |
@@ -206,6 +207,83 @@ python -m pytest tests/integration/ -v
 | `TIMEZONE` | Timezone | `America/Sao_Paulo` |
 | `PASSWORD_MIN_LENGTH` | Tamanho mínimo senha | `8` |
 | `BCRYPT_COST_FACTOR` | Custo bcrypt | `12` |
+
+## 🔒 Segurança
+
+### Medidas Implementadas
+
+| Proteção | Descrição |
+|----------|-----------|
+| **Sanitização OData** | Todas as queries ao Azure Tables são sanitizadas para prevenir injeção |
+| **Rate Limiting** | Limite de requisições por IP/usuário (5 req/min no login) |
+| **Timing Attack Prevention** | Delay aleatório no login para evitar enumeração de usuários |
+| **UUID Validation** | Validação de formato UUID em todos os parâmetros de rota |
+| **Error Hiding** | Detalhes de erro interno são ocultos em produção |
+| **Auditoria** | Log de todas as ações administrativas |
+| **HttpOnly Cookies** | Tokens JWT armazenados em cookies não acessíveis por JS |
+| **Security Headers** | X-Frame-Options, X-Content-Type-Options, CSP, etc. |
+
+### Auditoria
+
+Todas as ações administrativas são registradas na tabela `AuditLogs`:
+
+- Login/logout (sucesso e falha)
+- Criação/atualização/desativação de usuários
+- Reset de senha
+- Criação/atualização de tipos de documento
+- Geração e correção de números
+
+### Configuração para Produção
+
+#### 1. JWT Secret
+
+**CRÍTICO**: Configure um JWT_SECRET forte (mínimo 64 caracteres aleatórios).
+
+```bash
+# Gerar secret seguro
+python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Recomendado: Armazene no **Azure Key Vault** e referencie via Application Settings.
+
+#### 2. Rate Limiting com Redis
+
+Para ambientes de produção com múltiplas instâncias, configure o Redis:
+
+```bash
+REDIS_CONNECTION_STRING=rediss://:password@your-redis.redis.cache.windows.net:6380/0
+```
+
+Isso garante que o rate limiting seja persistente entre cold starts e compartilhado entre instâncias.
+
+#### 3. Headers de Segurança
+
+Os seguintes headers são configurados automaticamente via `host.json`:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Cache-Control: no-store`
+
+#### 4. CORS
+
+Configure `CORS_ORIGINS` apenas com as origens necessárias:
+
+```bash
+CORS_ORIGINS=https://seu-dominio.com,https://www.seu-dominio.com
+```
+
+### Checklist de Segurança para Deploy
+
+- [ ] `JWT_SECRET` configurado com valor forte (64+ caracteres)
+- [ ] `JWT_SECRET` armazenado no Azure Key Vault
+- [ ] `ENVIRONMENT` configurado como `production`
+- [ ] `CORS_ORIGINS` restrito aos domínios permitidos
+- [ ] `REDIS_CONNECTION_STRING` configurado (se múltiplas instâncias)
+- [ ] Azure Tables com autenticação via Managed Identity
+- [ ] HTTPS forçado via Azure App Service
+- [ ] Logs de auditoria sendo coletados
 
 ## 🔍 Troubleshooting
 

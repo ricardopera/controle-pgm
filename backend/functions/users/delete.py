@@ -2,13 +2,15 @@
 
 import azure.functions as func
 
-from core.exceptions import NotFoundError
+from core.exceptions import BadRequestError, NotFoundError
 from core.middleware import (
     create_json_response,
     handle_errors,
     require_admin,
 )
+from core.security import is_valid_uuid
 from models.user import CurrentUser
+from services.audit_service import AuditAction, AuditService
 from services.user_service import UserService
 
 bp = func.Blueprint()
@@ -29,10 +31,13 @@ def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
         }
 
     Errors:
-        400 - Cannot deactivate last admin
+        400 - Invalid user ID or cannot deactivate last admin
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
+    
+    if not is_valid_uuid(user_id):
+        raise BadRequestError("ID de usuário inválido")
 
     # Check if user exists
     user = UserService.get_by_id(user_id)
@@ -41,6 +46,15 @@ def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
 
     # Deactivate user (handles admin protection internally)
     UserService.deactivate(user_id, current_user["user_id"])
+
+    # Log user deactivation
+    AuditService.log_user_action(
+        action=AuditAction.USER_DEACTIVATED,
+        actor=current_user,
+        target_user_id=user_id,
+        target_user_email=user.Email,
+        ip_address=req.headers.get("X-Forwarded-For"),
+    )
 
     return create_json_response(
         {"success": True, "message": "Usuário desativado com sucesso"}, status_code=200

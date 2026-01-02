@@ -2,13 +2,14 @@
 
 import azure.functions as func
 
-from core.exceptions import NotFoundError
+from core.exceptions import BadRequestError, NotFoundError
 from core.middleware import (
     create_json_response,
     get_request_body,
     handle_errors,
     require_admin,
 )
+from core.security import is_valid_uuid
 from models.user import CurrentUser, UserResponse
 from services.user_service import UserService
 
@@ -43,11 +44,15 @@ def update_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
         }
 
     Errors:
-        400 - Invalid request
+        400 - Invalid request or user ID
         403 - Forbidden (e.g., removing last admin)
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
+    
+    if not is_valid_uuid(user_id):
+        raise BadRequestError("ID de usuário inválido")
+    
     body = get_request_body(req)
 
     # Get user first to check if exists

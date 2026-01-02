@@ -149,8 +149,16 @@ def handle_errors(func_handler: F) -> F:
         except Exception as e:
             # Log unexpected errors
             import logging
+            from core.config import settings
+            
             logging.error(f"Unexpected error: {str(e)}", exc_info=True)
-            error_message = f"Erro interno do servidor: {str(e)}"
+            
+            # Only show detailed error in development mode
+            if settings.is_development:
+                error_message = f"Erro interno do servidor: {str(e)}"
+            else:
+                error_message = "Erro interno do servidor. Tente novamente mais tarde."
+            
             return func.HttpResponse(
                 body=json.dumps({"error": error_message}),
                 status_code=500,

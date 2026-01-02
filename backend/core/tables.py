@@ -18,6 +18,7 @@ TABLE_USERS = "Users"
 TABLE_DOCUMENT_TYPES = "DocumentTypes"
 TABLE_SEQUENCES = "Sequences"
 TABLE_NUMBER_LOGS = "NumberLogs"
+TABLE_AUDIT_LOGS = "AuditLogs"
 
 
 @lru_cache
@@ -72,3 +73,8 @@ def get_sequences_table() -> TableClient:
 def get_number_logs_table() -> TableClient:
     """Get TableClient for NumberLogs table."""
     return get_table_client(TABLE_NUMBER_LOGS)
+
+
+def get_audit_logs_table() -> TableClient:
+    """Get TableClient for AuditLogs table."""
+    return get_table_client(TABLE_AUDIT_LOGS)

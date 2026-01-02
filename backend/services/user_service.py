@@ -13,6 +13,7 @@ from core.exceptions import (
     InvalidCredentialsError,
     NotFoundError,
 )
+from core.security import add_random_delay, sanitize_odata_string
 from core.tables import get_users_table
 from models.user import UserCreate, UserEntity
 
@@ -32,8 +33,9 @@ class UserService:
         """
         table = get_users_table()
 
-        # Query by email (case-insensitive)
-        query_filter = f"Email eq '{email.lower()}'"
+        # Query by email (case-insensitive) with sanitization
+        safe_email = sanitize_odata_string(email.lower())
+        query_filter = f"Email eq '{safe_email}'"
         entities = list(table.query_entities(query_filter=query_filter))
 
         if not entities:
@@ -77,7 +79,13 @@ class UserService:
         """
         user = UserService.get_by_email(email)
 
+        # Add random delay to prevent timing attacks
+        # This masks the time difference between "user not found" and "wrong password"
+        add_random_delay(min_ms=50, max_ms=150)
+
         if not user:
+            # Perform dummy hash to maintain consistent timing
+            verify_password(password, "$2b$12$dummy.hash.to.prevent.timing.attacks")
             raise InvalidCredentialsError("E-mail ou senha inválidos")
 
         if not verify_password(password, user.PasswordHash):

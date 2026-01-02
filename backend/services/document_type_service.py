@@ -7,6 +7,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.data.tables import UpdateMode
 
 from core.exceptions import ConflictError, NotFoundError
+from core.security import sanitize_odata_string
 from core.tables import get_document_types_table
 from models.document_type import (
     DocumentTypeCreate,
@@ -73,7 +74,8 @@ class DocumentTypeService:
         """
         table = get_document_types_table()
 
-        query_filter = f"Code eq '{code.upper()}'"
+        safe_code = sanitize_odata_string(code.upper())
+        query_filter = f"Code eq '{safe_code}'"
         entities = list(table.query_entities(query_filter=query_filter))
 
         if not entities:

@@ -2,12 +2,13 @@
 
 import azure.functions as func
 
-from core.exceptions import NotFoundError
+from core.exceptions import BadRequestError, NotFoundError
 from core.middleware import (
     create_json_response,
     handle_errors,
     require_admin,
 )
+from core.security import is_valid_uuid
 from models.user import CurrentUser, UserResponse
 from services.user_service import UserService
 
@@ -35,9 +36,13 @@ def get_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRespo
         }
 
     Errors:
+        400 - Invalid user ID format
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
+    
+    if not is_valid_uuid(user_id):
+        raise BadRequestError("ID de usuário inválido")
 
     entity = UserService.get_by_id(user_id)
     if not entity:

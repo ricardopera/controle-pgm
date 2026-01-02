@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # Azure Tables
     azure_tables_connection_string: str = "UseDevelopmentStorage=true"
 
+    # Azure Redis Cache (for production rate limiting)
+    redis_connection_string: str = ""
+
     # JWT Authentication
     jwt_secret: str = "change-this-in-production-min-32-characters-long"
     jwt_expiration_hours: int = 8
@@ -82,6 +85,11 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """Check if running in production mode."""
         return self.environment == "production"
+
+    @property
+    def use_redis_rate_limit(self) -> bool:
+        """Check if Redis should be used for rate limiting."""
+        return bool(self.redis_connection_string)
 
 
 @lru_cache

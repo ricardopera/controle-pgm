@@ -9,9 +9,15 @@ from core.middleware import (
     require_admin,
 )
 from models.user import CurrentUser, UserCreate, UserResponse
+from services.audit_service import AuditAction, AuditService
 from services.user_service import UserService
 
 bp = func.Blueprint()
+
+
+def _get_client_ip(req: func.HttpRequest) -> str | None:
+    """Extract client IP from request headers."""
+    return req.headers.get("X-Forwarded-For", req.headers.get("X-Real-IP"))
 
 
 @bp.route(route="users", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -51,5 +57,15 @@ def create_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
 
     entity = UserService.create(request_data)
     response = UserResponse.from_entity(entity)
+
+    # Log user creation
+    AuditService.log_user_action(
+        action=AuditAction.USER_CREATED,
+        actor=current_user,
+        target_user_id=entity.RowKey,
+        target_user_email=entity.Email,
+        details={"role": entity.Role, "name": entity.Name},
+        ip_address=_get_client_ip(req),
+    )
 
     return create_json_response(response.model_dump(mode="json"), status_code=201)
