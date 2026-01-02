@@ -87,6 +87,12 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Clean TypeScript build cache
+        run: |
+          cd frontend
+          rm -rf node_modules/.tmp
+          rm -f tsconfig.tsbuildinfo tsconfig.app.tsbuildinfo tsconfig.node.tsbuildinfo
+
       - name: Build
         run: |
           cd frontend
