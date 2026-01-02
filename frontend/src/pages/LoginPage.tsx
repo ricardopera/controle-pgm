@@ -69,7 +69,9 @@ export function LoginPage() {
         } else if (err.status === 403) {
           setError('Usuário inativo. Entre em contato com o administrador.');
         } else {
-          setError('Erro ao fazer login. Tente novamente.');
+          setError(
+            (err.data?.error as string) || 'Erro ao fazer login. Tente novamente.'
+          );
         }
       } else {
         setError('Erro de conexão. Verifique sua internet.');

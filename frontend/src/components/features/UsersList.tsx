@@ -70,7 +70,7 @@ export function UsersList() {
   async function loadUsers() {
     try {
       setLoading(true);
-      const response = await api.get<User[]>('/api/users');
+      const response = await api.get<User[]>('/users');
       setUsers(response);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar usuários';
@@ -106,10 +106,10 @@ export function UsersList() {
   async function handleToggleActive(user: User) {
     try {
       if (user.is_active) {
-        await api.delete(`/api/users/${user.id}`);
+        await api.delete(`/users/${user.id}`);
         toast.success(`Usuário "${user.name}" desativado!`);
       } else {
-        await api.put(`/api/users/${user.id}`, { is_active: true });
+        await api.put(`/users/${user.id}`, { is_active: true });
         toast.success(`Usuário "${user.name}" ativado!`);
       }
       await loadUsers();
@@ -142,7 +142,7 @@ export function UsersList() {
       setSaving(true);
       setFormError(null);
 
-      await api.post('/api/users', {
+      await api.post('/users', {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
@@ -153,7 +153,10 @@ export function UsersList() {
       setShowAddDialog(false);
       await loadUsers();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar usuário';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao criar usuário'
+          : 'Erro ao criar usuário';
       setFormError(message);
     } finally {
       setSaving(false);
@@ -172,7 +175,7 @@ export function UsersList() {
       setSaving(true);
       setFormError(null);
 
-      await api.put(`/api/users/${selectedUser.id}`, {
+      await api.put(`/users/${selectedUser.id}`, {
         name: formData.name.trim(),
         role: formData.role,
       });
@@ -181,7 +184,10 @@ export function UsersList() {
       setShowEditDialog(false);
       await loadUsers();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao atualizar usuário';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao atualizar usuário'
+          : 'Erro ao atualizar usuário';
       setFormError(message);
     } finally {
       setSaving(false);
@@ -193,13 +199,16 @@ export function UsersList() {
 
     try {
       setSaving(true);
-      await api.delete(`/api/users/${selectedUser.id}`);
+      await api.delete(`/users/${selectedUser.id}`);
 
       toast.success(`Usuário "${selectedUser.name}" desativado!`);
       setShowDeactivateDialog(false);
       await loadUsers();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao desativar usuário';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao desativar usuário'
+          : 'Erro ao desativar usuário';
       toast.error(message);
     } finally {
       setSaving(false);
@@ -212,7 +221,7 @@ export function UsersList() {
     try {
       setSaving(true);
       const response = await api.post<{ temporary_password: string }>(
-        `/api/users/${selectedUser.id}/reset-password`
+        `/users/${selectedUser.id}/reset-password`
       );
 
       setTempPassword(response.temporary_password);
@@ -220,7 +229,10 @@ export function UsersList() {
       setShowTempPasswordDialog(true);
       await loadUsers();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao redefinir senha';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao redefinir senha'
+          : 'Erro ao redefinir senha';
       toast.error(message);
     } finally {
       setSaving(false);

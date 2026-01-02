@@ -53,7 +53,7 @@ export function DocumentTypesList() {
   async function loadDocumentTypes() {
     try {
       setLoading(true);
-      const response = await api.get<DocumentTypesListResponse>('/api/document-types?all=true');
+      const response = await api.get<DocumentTypesListResponse>('/document-types?all=true');
       setDocumentTypes(response.items);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar tipos de documento';
@@ -79,10 +79,10 @@ export function DocumentTypesList() {
   async function handleToggleActive(type: DocumentType) {
     try {
       if (type.is_active) {
-        await api.delete(`/api/document-types/${type.id}`);
+        await api.delete(`/document-types/${type.id}`);
         toast.success(`Tipo "${type.name}" desativado!`);
       } else {
-        await api.put(`/api/document-types/${type.id}`, { is_active: true });
+        await api.put(`/document-types/${type.id}`, { is_active: true });
         toast.success(`Tipo "${type.name}" ativado!`);
       }
       await loadDocumentTypes();
@@ -107,7 +107,7 @@ export function DocumentTypesList() {
       setSaving(true);
       setFormError(null);
 
-      await api.post('/api/document-types', {
+      await api.post('/document-types', {
         code: formData.code.toUpperCase().trim(),
         name: formData.name.trim(),
       });
@@ -116,7 +116,10 @@ export function DocumentTypesList() {
       setShowAddDialog(false);
       await loadDocumentTypes();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar tipo de documento';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao criar tipo de documento'
+          : 'Erro ao criar tipo de documento';
       setFormError(message);
     } finally {
       setSaving(false);
@@ -135,7 +138,7 @@ export function DocumentTypesList() {
       setSaving(true);
       setFormError(null);
 
-      await api.put(`/api/document-types/${selectedType.id}`, {
+      await api.put(`/document-types/${selectedType.id}`, {
         name: formData.name.trim(),
       });
 
@@ -143,7 +146,10 @@ export function DocumentTypesList() {
       setShowEditDialog(false);
       await loadDocumentTypes();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao atualizar tipo de documento';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao atualizar tipo de documento'
+          : 'Erro ao atualizar tipo de documento';
       setFormError(message);
     } finally {
       setSaving(false);
@@ -155,13 +161,16 @@ export function DocumentTypesList() {
 
     try {
       setSaving(true);
-      await api.delete(`/api/document-types/${selectedType.id}`);
+      await api.delete(`/document-types/${selectedType.id}`);
 
       toast.success(`Tipo "${selectedType.name}" desativado!`);
       setShowDeleteDialog(false);
       await loadDocumentTypes();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao desativar tipo de documento';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao desativar tipo de documento'
+          : 'Erro ao desativar tipo de documento';
       toast.error(message);
     } finally {
       setSaving(false);

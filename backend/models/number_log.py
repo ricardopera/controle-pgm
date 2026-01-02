@@ -76,7 +76,7 @@ class HistoryFilter(BaseModel):
     user_id: str | None = None
     action: Literal["generated", "corrected"] | None = None
     page: int = Field(1, ge=1)
-    page_size: int = Field(50, ge=1, le=100)
+    page_size: int = Field(50, ge=1, le=10000)
 
 
 class HistoryResponse(BaseModel):

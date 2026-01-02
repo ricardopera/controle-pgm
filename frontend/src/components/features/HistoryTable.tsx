@@ -60,7 +60,7 @@ export function HistoryTable({ onExport }: HistoryTableProps) {
       if (filterYear) params.append('year', filterYear);
       if (filterAction) params.append('action', filterAction);
 
-      const response = await api.get<HistoryResponse>(`/api/history?${params.toString()}`);
+      const response = await api.get<HistoryResponse>(`/history?${params.toString()}`);
 
       setHistory(response.items);
       setTotalPages(response.total_pages);
@@ -75,7 +75,7 @@ export function HistoryTable({ onExport }: HistoryTableProps) {
 
   const loadDocumentTypes = async () => {
     try {
-      const response = await api.get<{ items: DocumentType[] }>('/api/document-types?all=true');
+      const response = await api.get<{ items: DocumentType[] }>('/document-types?all=true');
       setDocumentTypes(response.items);
     } catch {
       // Silently fail - filters will just not show types

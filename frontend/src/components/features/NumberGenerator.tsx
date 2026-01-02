@@ -39,9 +39,9 @@ export function NumberGenerator() {
   const [generatedNumber, setGeneratedNumber] = useState<GeneratedNumber | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Generate year options (current year and next year)
+  // Generate year options (current year only)
   const currentYear = new Date().getFullYear();
-  const yearOptions = [currentYear, currentYear + 1];
+  const yearOptions = [currentYear];
 
   // Load document types on mount
   useEffect(() => {
@@ -52,7 +52,7 @@ export function NumberGenerator() {
     try {
       setLoadingTypes(true);
       setError(null);
-      const response = await api.get<DocumentTypesListResponse>('/api/document-types');
+      const response = await api.get<DocumentTypesListResponse>('/document-types');
       setDocumentTypes(response.items);
       
       // Auto-select first type if available
@@ -84,7 +84,7 @@ export function NumberGenerator() {
       setError(null);
       setShowConfirm(false);
 
-      const response = await api.post<GeneratedNumber>('/api/numbers/generate', {
+      const response = await api.post<GeneratedNumber>('/numbers/generate', {
         document_type_code: selectedType,
         year: selectedYear,
       });

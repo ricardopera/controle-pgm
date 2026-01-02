@@ -71,7 +71,7 @@ export function ChangePasswordDialog({ open }: ChangePasswordDialogProps) {
     setIsLoading(true);
 
     try {
-      await api.post('/api/auth/change-password', {
+      await api.post('/auth/change-password', {
         current_password: data.currentPassword,
         new_password: data.newPassword,
       });
@@ -82,7 +82,7 @@ export function ChangePasswordDialog({ open }: ChangePasswordDialogProps) {
           setError('Senha atual incorreta');
         } else {
           setError(
-            (err.data?.message as string) || 'Erro ao alterar senha'
+            (err.data?.error as string) || 'Erro ao alterar senha'
           );
         }
       } else {
