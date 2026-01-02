@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import type { DocumentType, DocumentTypesListResponse } from '@/types';
 

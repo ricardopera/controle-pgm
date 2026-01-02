@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import type { User } from '@/types';
 
