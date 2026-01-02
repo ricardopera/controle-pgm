@@ -145,27 +145,8 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            STORAGE_ACCOUNT_NAME="${{ vars.STORAGE_ACCOUNT_NAME || 'controlepgmprod' }}"
-            
-            echo "Deploying to Storage Account: $STORAGE_ACCOUNT_NAME"
-
-            export EXIT_CODE=0
             az storage blob upload-batch \
-              --account-name "$STORAGE_ACCOUNT_NAME" \
+              --account-name "${{ vars.STORAGE_ACCOUNT_NAME || 'controlepgmprod' }}" \
               --destination '$web' \
               --source frontend/dist \
-              --overwrite > az-output.txt 2>&1 || export EXIT_CODE=$?
-
-            python3 -c '
-            import os
-            try:
-                with open("az-output.txt", "r") as f:
-                    content = f.read()
-                msg = content[-2000:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
-                if os.environ.get("EXIT_CODE") != "0":
-                    print(f"::error title=Azure CLI Failed::{msg}")
-            except Exception as e:
-                print(f"::error title=Debug Script Failed::{str(e)}")
-            '
-
-            exit $EXIT_CODE
+              --overwrite
