@@ -5,6 +5,11 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
+  resolve: {
+    alias: {
+      '@/': new URL('./src/', import.meta.url).pathname,
+    },
+  },
   server: {
     port: 5173,
     proxy: {
@@ -19,6 +24,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    alias: {
+      '@/': new URL('./src/', import.meta.url).pathname,
+    },
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
