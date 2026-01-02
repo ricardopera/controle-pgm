@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -43,12 +43,7 @@ export function NumberGenerator() {
   const currentYear = new Date().getFullYear();
   const yearOptions = [currentYear];
 
-  // Load document types on mount
-  useEffect(() => {
-    loadDocumentTypes();
-  }, []);
-
-  async function loadDocumentTypes() {
+  const loadDocumentTypes = useCallback(async () => {
     try {
       setLoadingTypes(true);
       setError(null);
@@ -66,7 +61,12 @@ export function NumberGenerator() {
     } finally {
       setLoadingTypes(false);
     }
-  }
+  }, [selectedType]);
+
+  // Load document types on mount
+  useEffect(() => {
+    loadDocumentTypes();
+  }, [loadDocumentTypes]);
 
   function handleGenerateClick() {
     if (!selectedType) {
