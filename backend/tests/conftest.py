@@ -30,7 +30,7 @@ def mock_table_client():
 @pytest.fixture
 def mock_table_service(mock_table_client):
     """Create a mock TableServiceClient with table access."""
-    with patch("backend.core.tables.TableServiceClient") as mock_service:
+    with patch("core.tables.TableServiceClient") as mock_service:
         instance = MagicMock()
         instance.get_table_client.return_value = mock_table_client
         mock_service.from_connection_string.return_value = instance

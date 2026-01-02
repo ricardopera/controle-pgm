@@ -64,9 +64,17 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     publicNetworkAccess: 'Enabled'
+    functionAppConfig: {
+      runtime: {
+        name: 'python'
+        version: '3.11'
+      }
+      scaleAndConcurrency: {
+        maximumInstanceCount: 100
+        instanceMemoryMB: 2048
+      }
+    }
     siteConfig: {
-      linuxFxVersion: 'Python|3.11'
-      pythonVersion: '3.11'
       cors: {
         allowedOrigins: corsOrigins
         supportCredentials: true
@@ -104,42 +112,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
         }
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true'
-        }
       ]
-      ftpsState: 'Disabled'
-      minTlsVersion: '1.2'
-      http20Enabled: true
-    }
-  }
-}
-
-// Function App deployment slot for staging (production environment only)
-resource stagingSlot 'Microsoft.Web/sites/slots@2023-12-01' = if (environment == 'prod') {
-  parent: functionApp
-  name: 'staging'
-  location: location
-  tags: tags
-  kind: 'functionapp,linux'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    serverFarmId: hostingPlan.id
-    httpsOnly: true
-    siteConfig: {
-      linuxFxVersion: 'Python|3.11'
-      pythonVersion: '3.11'
-      cors: {
-        allowedOrigins: corsOrigins
-        supportCredentials: true
-      }
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true

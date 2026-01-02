@@ -65,7 +65,6 @@ module keyvault 'modules/keyvault.bicep' = {
   name: 'keyvault-deployment'
   params: {
     baseName: baseName
-    environment: environment
     location: location
     tags: tags
     accessPrincipalIds: [functionApp.outputs.managedIdentityPrincipalId]

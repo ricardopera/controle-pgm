@@ -7,10 +7,6 @@ param location string
 @description('Resource name prefix')
 param baseName string
 
-@description('Environment name')
-@allowed(['dev', 'prod'])
-param environment string
-
 @description('Tags to apply to resources')
 param tags object = {}
 
@@ -21,7 +17,7 @@ param accessPrincipalIds array = []
 param tenantId string = subscription().tenantId
 
 // Resource name
-var keyVaultName = 'kv-${baseName}'
+var keyVaultName = 'kv-controle-pgm'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: length(keyVaultName) > 24 ? substring(keyVaultName, 0, 24) : keyVaultName
