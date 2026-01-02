@@ -62,10 +62,17 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Debug - Show vite.config.ts
+        run: |
+          cd frontend
+          cat vite.config.ts
+          echo "---"
+          cat tsconfig.app.json
+
       - name: Run tests
         run: |
           cd frontend
-          npm run test:ci
+          DEBUG=vite-tsconfig-paths npm run test:ci
 
   build:
     name: Build
