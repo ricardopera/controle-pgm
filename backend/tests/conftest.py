@@ -40,7 +40,7 @@ def mock_table_service(mock_table_client):
 @pytest.fixture
 def sample_user_entity():
     """Create a sample user entity for testing."""
-    from backend.core.auth import hash_password
+    from core.auth import hash_password
 
     now = datetime.utcnow()
     return {
@@ -60,7 +60,7 @@ def sample_user_entity():
 @pytest.fixture
 def sample_admin_entity():
     """Create a sample admin entity for testing."""
-    from backend.core.auth import hash_password
+    from core.auth import hash_password
 
     now = datetime.utcnow()
     return {
@@ -128,7 +128,7 @@ def sample_number_log_entity():
 @pytest.fixture
 def auth_token(sample_user_entity):
     """Create a valid authentication token for testing."""
-    from backend.core.auth import create_token
+    from core.auth import create_token
 
     return create_token(
         user_id=sample_user_entity["RowKey"],
@@ -141,7 +141,7 @@ def auth_token(sample_user_entity):
 @pytest.fixture
 def admin_auth_token(sample_admin_entity):
     """Create a valid admin authentication token for testing."""
-    from backend.core.auth import create_token
+    from core.auth import create_token
 
     return create_token(
         user_id=sample_admin_entity["RowKey"],

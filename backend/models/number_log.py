@@ -31,10 +31,7 @@ class NumberLogEntity(BaseModel):
     Notes: str | None = None
     CreatedAt: datetime
 
-    model_config = {
-        "from_attributes": True,
-        "extra": "ignore"
-    }
+    model_config = {"from_attributes": True, "extra": "ignore"}
 
 
 class NumberLogResponse(BaseModel):

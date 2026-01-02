@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Literal
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Brazil timezone offset (UTC-3)
 BRAZIL_TZ_OFFSET = timedelta(hours=-3)
@@ -36,6 +36,12 @@ def get_current_year() -> int:
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
+
     # Azure Tables
     azure_tables_connection_string: str = "UseDevelopmentStorage=true"
 
@@ -63,13 +69,6 @@ class Settings(BaseSettings):
     # Rate Limiting
     rate_limit_requests: int = 100
     rate_limit_window_minutes: int = 1
-
-    class Config:
-        """Pydantic settings configuration."""
-
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
 
     @property
     def cors_origins_list(self) -> list[str]:

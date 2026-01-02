@@ -38,7 +38,7 @@ def reset_user_password(req: func.HttpRequest, current_user: CurrentUser) -> fun
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
-    
+
     if not is_valid_uuid(user_id):
         raise BadRequestError("ID de usuário inválido")
 

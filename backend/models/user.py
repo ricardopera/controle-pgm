@@ -25,10 +25,7 @@ class UserEntity(BaseModel):
     CreatedAt: datetime
     UpdatedAt: datetime
 
-    model_config = {
-        "from_attributes": True,
-        "extra": "ignore"
-    }
+    model_config = {"from_attributes": True, "extra": "ignore"}
 
 
 class LoginRequest(BaseModel):

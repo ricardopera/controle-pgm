@@ -33,10 +33,8 @@ def _get_redis_client():
     if _redis_client is None and settings.use_redis_rate_limit:
         try:
             import redis
-            _redis_client = redis.from_url(
-                settings.redis_connection_string,
-                decode_responses=True
-            )
+
+            _redis_client = redis.from_url(settings.redis_connection_string, decode_responses=True)
             _redis_client.ping()  # Test connection
             logger.info("Redis rate limiting enabled")
         except Exception as e:
@@ -72,11 +70,11 @@ def _check_rate_limit_redis(key: str, max_requests: int, window_seconds: int) ->
     try:
         redis_key = f"rate_limit:{key}"
         current = redis_client.incr(redis_key)
-        
+
         if current == 1:
             # First request, set expiration
             redis_client.expire(redis_key, window_seconds)
-        
+
         return current <= max_requests
     except Exception as e:
         logger.error(f"Redis rate limit error: {e}")

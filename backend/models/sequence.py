@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from core.config import get_current_year
 
@@ -30,10 +30,7 @@ class SequenceEntity(BaseModel):
     # ETag for optimistic concurrency
     _etag: str | None = PrivateAttr(default=None)
 
-    model_config = {
-        "from_attributes": True,
-        "extra": "ignore"
-    }
+    model_config = {"from_attributes": True, "extra": "ignore"}
 
 
 class SequenceResponse(BaseModel):

@@ -49,10 +49,10 @@ def update_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
-    
+
     if not is_valid_uuid(user_id):
         raise BadRequestError("ID de usuário inválido")
-    
+
     body = get_request_body(req)
 
     # Get user first to check if exists

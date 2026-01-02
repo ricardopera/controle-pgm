@@ -15,6 +15,7 @@ from core.tables import get_number_logs_table, get_sequences_table
 from models.number_log import NumberLogEntity
 from models.sequence import SequenceEntity
 from models.user import CurrentUser
+
 from .document_type_service import DocumentTypeService
 
 
