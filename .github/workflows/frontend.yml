@@ -62,11 +62,10 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Run tests with verbose output
+      - name: Run tests
         run: |
           cd frontend
-          npx vitest run --reporter=verbose 2>&1 || true
-          echo "Exit code: $?"
+          npm run test:ci
 
   build:
     name: Build
