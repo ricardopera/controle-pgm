@@ -28,6 +28,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
