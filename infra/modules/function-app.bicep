@@ -18,6 +18,9 @@ param tags object = {}
 @secure()
 param storageConnectionString string
 
+@description('Storage account blob endpoint for deployment')
+param storageBlobEndpoint string
+
 @description('Azure Tables connection string')
 @secure()
 param tablesConnectionString string
@@ -69,6 +72,15 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         name: 'python'
         version: '3.11'
       }
+      deployment: {
+        storage: {
+          type: 'blobContainer'
+          value: '${storageBlobEndpoint}deploymentpackage'
+          authentication: {
+            type: 'SystemAssignedIdentity'
+          }
+        }
+      }
       scaleAndConcurrency: {
         maximumInstanceCount: 100
         instanceMemoryMB: 2048
@@ -77,46 +89,22 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       cors: {
         allowedOrigins: corsOrigins
-        supportCredentials: true
       }
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: storageConnectionString
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'python'
-        }
-        {
-          name: 'AZURE_TABLES_CONNECTION_STRING'
-          value: tablesConnectionString
-        }
-        {
-          name: 'JWT_SECRET'
-          value: jwtSecret
-        }
-        {
-          name: 'JWT_EXPIRATION_HOURS'
-          value: '8'
-        }
-        {
-          name: 'CORS_ORIGINS'
-          value: join(corsOrigins, ',')
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-      ]
-      ftpsState: 'Disabled'
-      minTlsVersion: '1.2'
-      http20Enabled: true
     }
+  }
+}
+
+// App Settings
+resource appSettings 'Microsoft.Web/sites/config@2023-12-01' = {
+  name: 'appsettings'
+  parent: functionApp
+  properties: {
+    AzureWebJobsStorage: storageConnectionString
+    AZURE_TABLES_CONNECTION_STRING: tablesConnectionString
+    JWT_SECRET: jwtSecret
+    JWT_EXPIRATION_HOURS: '8'
+    CORS_ORIGINS: join(corsOrigins, ',')
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
   }
 }
 
