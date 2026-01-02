@@ -19,9 +19,10 @@ infra/
 
 | Recurso | Nome | Descrição |
 |---------|------|-----------|
-| Storage Account | stcontrolepgm | Armazena site estático e tabelas |
-| Function App | func-controle-pgm | API backend (Flex Consumption) |
+| Storage Account | controlepgmdev | Armazena site estático e tabelas |
+| Function App | controlepgm-api-dev | API backend (Flex Consumption) |
 | Azure Tables | Users, DocumentTypes, Sequences, NumberLogs | Dados do sistema |
+| Key Vault | kv-controle-pgm | Armazenamento de segredos |
 
 ## 🌍 Região
 

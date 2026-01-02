@@ -33,7 +33,7 @@ param corsOrigins array = ['*']
 param appInsightsConnectionString string = ''
 
 // Resource names
-var functionAppName = '${baseName}-func-${environment}'
+var functionAppName = '${baseName}-api-${environment}'
 var hostingPlanName = '${baseName}-plan-${environment}'
 
 // Flex Consumption Plan

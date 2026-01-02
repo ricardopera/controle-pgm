@@ -238,7 +238,7 @@ VITE_API_URL=http://localhost:7071
 ### Exemplo `.env.production`
 
 ```env
-VITE_API_URL=https://func-controle-pgm.azurewebsites.net
+VITE_API_URL=https://controlepgm-api-dev.azurewebsites.net
 ```
 
 ## 🔍 Troubleshooting

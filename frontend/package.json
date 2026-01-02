@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:ci": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },

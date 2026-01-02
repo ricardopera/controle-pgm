@@ -14,7 +14,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
-  AZURE_FUNCTIONAPP_NAME: 'func-controle-pgm'
+  AZURE_FUNCTIONAPP_NAME: 'controlepgm-api-dev'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend'
 
 jobs:

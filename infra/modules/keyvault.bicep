@@ -21,7 +21,7 @@ param accessPrincipalIds array = []
 param tenantId string = subscription().tenantId
 
 // Resource name
-var keyVaultName = '${baseName}-kv-${environment}'
+var keyVaultName = 'kv-${baseName}'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: length(keyVaultName) > 24 ? substring(keyVaultName, 0, 24) : keyVaultName
