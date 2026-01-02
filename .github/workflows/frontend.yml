@@ -145,14 +145,13 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            if [ -z "${{ vars.STORAGE_ACCOUNT_NAME }}" ]; then
-              echo "::error::STORAGE_ACCOUNT_NAME variable is not set"
-              exit 1
-            fi
+            STORAGE_ACCOUNT_NAME="${{ vars.STORAGE_ACCOUNT_NAME || 'controlepgmprod' }}"
+            
+            echo "Deploying to Storage Account: $STORAGE_ACCOUNT_NAME"
 
             export EXIT_CODE=0
             az storage blob upload-batch \
-              --account-name ${{ vars.STORAGE_ACCOUNT_NAME }} \
+              --account-name "$STORAGE_ACCOUNT_NAME" \
               --destination '$web' \
               --source frontend/dist \
               --overwrite > az-output.txt 2>&1 || export EXIT_CODE=$?
