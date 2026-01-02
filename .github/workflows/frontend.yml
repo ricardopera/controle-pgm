@@ -65,7 +65,24 @@ jobs:
       - name: Run tests
         run: |
           cd frontend
-          npm run test:ci
+          set +e
+          npm run test:ci 2>&1 | tee vitest-output.txt
+          exit_code=${PIPESTATUS[0]}
+          if [ "$exit_code" -ne 0 ]; then
+            echo "\n--- Last 200 lines of Vitest output ---"
+            tail -n 200 vitest-output.txt || true
+
+            # Create a GitHub Actions annotation with a short, URL-escaped tail of the output.
+            python3 - <<'PY'
+            import subprocess
+
+            tail = subprocess.check_output(["bash", "-lc", "tail -n 60 vitest-output.txt"], text=True)
+            msg = tail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+            print(f"::error title=Vitest failed::{msg}")
+            PY
+
+            exit "$exit_code"
+          fi
 
   build:
     name: Build
