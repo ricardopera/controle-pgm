@@ -1,0 +1,57 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local settings
+local.settings.json
+.env
+.env.local
+
+# Tests
+tests/
+conftest.py
+
+# Azurite local storage
+__azurite_db_*.json
+__blobstorage__/
+__queuestorage__/
+AzuriteConfig
+
+# Documentation
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
