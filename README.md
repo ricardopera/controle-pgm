@@ -23,6 +23,8 @@ O Controle PGM é uma aplicação web que permite aos servidores da Procuradoria
 - **Frontend**: React 18 + TypeScript 5 + Vite 5 + Tailwind CSS + Shadcn/UI
 - **Backend**: Python 3.11 + Azure Functions v4 (Flex Consumption)
 - **Banco de Dados**: Azure Tables (NoSQL)
+- **Cache**: Redis (Upstash) para Rate Limiting
+- **Segurança**: JWT, Bleach (Sanitização), Security Headers (CSP, HSTS)
 - **Hospedagem**: Azure Storage Static Website + Azure Functions
 - **Região**: Brazil South
 

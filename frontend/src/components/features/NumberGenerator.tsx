@@ -48,11 +48,13 @@ export function NumberGenerator() {
       setLoadingTypes(true);
       setError(null);
       const response = await api.get<DocumentTypesListResponse>('/document-types');
-      setDocumentTypes(response.items);
-      
+      // Filtro defensivo: garantir que apenas tipos ativos são exibidos
+      const activeTypes = response.items.filter((type) => type.is_active);
+      setDocumentTypes(activeTypes);
+
       // Auto-select first type if available
-      if (response.items.length > 0 && !selectedType) {
-        setSelectedType(response.items[0].code);
+      if (activeTypes.length > 0 && !selectedType) {
+        setSelectedType(activeTypes[0].code);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar tipos de documento';

@@ -87,7 +87,12 @@ export function DocumentTypesList() {
       }
       await loadDocumentTypes();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao alterar status';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao alterar status'
+          : err instanceof Error
+            ? err.message
+            : 'Erro ao alterar status';
       toast.error(message);
     }
   }
