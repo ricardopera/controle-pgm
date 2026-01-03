@@ -3,7 +3,7 @@
  * Uses fetch with credentials for HttpOnly cookie authentication.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://controlepgm-api-prod.azurewebsites.net/api');
 
 /**
  * Custom error class for API errors.
