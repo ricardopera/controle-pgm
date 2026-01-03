@@ -146,7 +146,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az storage blob upload-batch \
-              --account-name "${{ vars.STORAGE_ACCOUNT_NAME || 'controlepgmprod' }}" \
+              --account-name "${{ vars.STORAGE_ACCOUNT_NAME }}" \
               --destination '$web' \
               --source frontend/dist \
               --overwrite
