@@ -32,7 +32,21 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az bicep build --file infra/main.bicep --stdout > /dev/null
+            export EXIT_CODE=0
+            az bicep build --file infra/main.bicep > bicep-output.txt 2>&1 || export EXIT_CODE=$?
+            
+            python3 -c '
+            import os
+            try:
+                with open("bicep-output.txt", "r") as f:
+                    content = f.read()
+                msg = content[-2000:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                if os.environ.get("EXIT_CODE") != "0":
+                    print(f"::error title=Bicep Validation Failed::{msg}")
+            except Exception as e:
+                print(f"::error title=Debug Script Failed::{str(e)}")
+            '
+            exit $EXIT_CODE
 
       - name: What-if deployment
         uses: azure/CLI@v2
