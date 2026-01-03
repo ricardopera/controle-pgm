@@ -87,11 +87,6 @@ module functionApp 'modules/function-app.bicep' = {
   }
 }
 
-// Reference existing storage account for role assignment
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storage.outputs.storageAccountName
-}
-
 // =============================================================================
 // Outputs
 // =============================================================================
