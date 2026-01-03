@@ -7,7 +7,6 @@ from core.middleware import (
     handle_errors,
     require_admin,
 )
-from models.document_type import DocumentTypeResponse
 from models.user import CurrentUser
 from services.document_type_service import DocumentTypeService
 
