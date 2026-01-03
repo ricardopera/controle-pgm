@@ -43,6 +43,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
+/*
 // Role assignment for secret access (Key Vault Secrets User)
 resource secretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for principalId in accessPrincipalIds: {
   name: guid(keyVault.id, principalId, '4633458b-17de-408a-b874-0445c86b69e6')
@@ -53,6 +54,7 @@ resource secretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022
     principalType: 'ServicePrincipal'
   }
 }]
+*/
 
 // Outputs
 @description('Key Vault name')
