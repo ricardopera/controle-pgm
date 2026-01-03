@@ -96,15 +96,6 @@ resource webContainer 'Microsoft.Storage/storageAccounts/blobServices/containers
   }
 }
 
-// Container for Flex Consumption deployment packages
-resource deploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
-  parent: blobService
-  name: 'deploymentpackage'
-  properties: {
-    publicAccess: 'None'
-  }
-}
-
 // Outputs
 @description('Storage account name')
 output storageAccountName string = storageAccount.name

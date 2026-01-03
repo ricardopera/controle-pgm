@@ -80,7 +80,6 @@ module functionApp 'modules/function-app.bicep' = {
     location: location
     tags: tags
     storageConnectionString: storage.outputs.connectionString
-    storageBlobEndpoint: storage.outputs.primaryEndpoints.blob
     tablesConnectionString: storage.outputs.connectionString
     jwtSecret: jwtSecret
     corsOrigins: [storage.outputs.staticWebsiteEndpoint]
@@ -91,18 +90,6 @@ module functionApp 'modules/function-app.bicep' = {
 // Reference existing storage account for role assignment
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storage.outputs.storageAccountName
-}
-
-// Role Assignment: Function App to Storage Account (Storage Blob Data Contributor)
-// Required for Flex Consumption deployment
-resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, functionApp.outputs.managedIdentityPrincipalId, 'ba92f572-3b2b-4ada-a4c0-d617f42b06b1')
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f572-3b2b-4ada-a4c0-d617f42b06b1')
-    principalId: functionApp.outputs.managedIdentityPrincipalId
-    principalType: 'ServicePrincipal'
-  }
 }
 
 // =============================================================================
