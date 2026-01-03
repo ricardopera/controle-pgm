@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from core.security import sanitize_html
 
 
 class DocumentTypeEntity(BaseModel):
@@ -30,12 +32,26 @@ class DocumentTypeCreate(BaseModel):
     code: str = Field(..., min_length=1, max_length=10, pattern=r"^[A-Z0-9]+$")
     name: str = Field(..., min_length=2, max_length=100)
 
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        """Sanitize name field."""
+        return sanitize_html(v)
+
 
 class DocumentTypeUpdate(BaseModel):
     """Request body for updating a document type."""
 
     name: str | None = Field(None, min_length=2, max_length=100)
     is_active: bool | None = None
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str | None) -> str | None:
+        """Sanitize name field."""
+        if v is None:
+            return None
+        return sanitize_html(v)
 
 
 class DocumentTypeResponse(BaseModel):

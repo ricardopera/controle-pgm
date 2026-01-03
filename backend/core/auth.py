@@ -166,9 +166,10 @@ def create_auth_cookie(token: str) -> dict[str, str]:
     """
     max_age = settings.jwt_expiration_hours * 3600
     secure = "Secure; " if settings.is_production else ""
+    samesite = "None" if settings.is_production else "Strict"
 
     cookie_value = (
-        f"auth_token={token}; HttpOnly; {secure}SameSite=Strict; Path=/; Max-Age={max_age}"
+        f"auth_token={token}; HttpOnly; {secure}SameSite={samesite}; Path=/; Max-Age={max_age}"
     )
 
     return {"Set-Cookie": cookie_value}
@@ -182,8 +183,9 @@ def create_logout_cookie() -> dict[str, str]:
         Dictionary with Set-Cookie header value to expire the cookie.
     """
     secure = "Secure; " if settings.is_production else ""
+    samesite = "None" if settings.is_production else "Strict"
 
-    cookie_value = f"auth_token=; HttpOnly; {secure}SameSite=Strict; Path=/; Max-Age=0"
+    cookie_value = f"auth_token=; HttpOnly; {secure}SameSite={samesite}; Path=/; Max-Age=0"
 
     return {"Set-Cookie": cookie_value}
 

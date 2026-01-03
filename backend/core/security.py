@@ -7,6 +7,26 @@ import secrets
 import time
 from uuid import UUID
 
+import bleach
+
+
+def sanitize_html(value: str) -> str:
+    """
+    Sanitize HTML content to prevent XSS attacks.
+
+    Removes all tags and attributes, leaving only safe text.
+
+    Args:
+        value: The string to sanitize.
+
+    Returns:
+        Sanitized string.
+    """
+    if not value:
+        return value
+
+    return bleach.clean(value, tags=[], attributes={}, strip=True)
+
 
 def sanitize_odata_string(value: str) -> str:
     """

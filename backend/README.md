@@ -7,8 +7,10 @@ API REST em Python para o sistema de controle de numeração de documentos.
 - **Runtime**: Python 3.11
 - **Framework**: Azure Functions v4 (Blueprint pattern)
 - **Validação**: Pydantic v2
+- **Sanitização**: Bleach (HTML Sanitization)
 - **Autenticação**: PyJWT + bcrypt
 - **Banco de Dados**: Azure Tables (azure-data-tables)
+- **Cache**: Redis (Upstash/Azure Redis) para Rate Limiting
 
 ## 📁 Estrutura
 
@@ -215,13 +217,14 @@ python -m pytest tests/integration/ -v
 | Proteção | Descrição |
 |----------|-----------|
 | **Sanitização OData** | Todas as queries ao Azure Tables são sanitizadas para prevenir injeção |
-| **Rate Limiting** | Limite de requisições por IP/usuário (5 req/min no login) |
+| **Sanitização de Input** | Remoção de tags HTML (XSS) via Bleach em todos os campos de texto |
+| **Rate Limiting** | Limite de requisições por IP/usuário (Redis em produção) |
 | **Timing Attack Prevention** | Delay aleatório no login para evitar enumeração de usuários |
 | **UUID Validation** | Validação de formato UUID em todos os parâmetros de rota |
 | **Error Hiding** | Detalhes de erro interno são ocultos em produção |
 | **Auditoria** | Log de todas as ações administrativas |
 | **HttpOnly Cookies** | Tokens JWT armazenados em cookies não acessíveis por JS |
-| **Security Headers** | X-Frame-Options, X-Content-Type-Options, CSP, etc. |
+| **Security Headers** | CSP, HSTS, X-Frame-Options, X-Content-Type-Options, etc. |
 
 ### Auditoria
 
@@ -258,13 +261,15 @@ Isso garante que o rate limiting seja persistente entre cold starts e compartilh
 
 #### 3. Headers de Segurança
 
-Os seguintes headers são configurados automaticamente via `host.json`:
+Os seguintes headers são injetados automaticamente via Middleware (`core/middleware.py`) em todas as respostas:
 
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
-- `X-XSS-Protection: 1; mode=block`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Cache-Control: no-store`
+- `Content-Security-Policy`: Restringe fontes de scripts, estilos e imagens
+- `Strict-Transport-Security`: Força HTTPS (HSTS)
+- `X-Content-Type-Options: nosniff`: Previne MIME sniffing
+- `X-Frame-Options: DENY`: Previne Clickjacking
+- `X-XSS-Protection: 1; mode=block`: Proteção XSS legada
+- `Referrer-Policy: strict-origin-when-cross-origin`: Privacidade de referrer
+- `Server`: Removido (ou vazio) para ocultar tecnologia do servidor
 
 #### 4. CORS
 
