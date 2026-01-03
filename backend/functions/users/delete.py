@@ -20,18 +20,18 @@ bp = func.Blueprint()
 @handle_errors
 @require_admin
 def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpResponse:
-    """Deactivate a user (soft delete).
+    """Delete a user permanently (Hard Delete).
 
     DELETE /api/users/{user_id}
 
     Response (200):
         {
             "success": true,
-            "message": "Usuário desativado com sucesso"
+            "message": "Usuário excluído com sucesso"
         }
 
     Errors:
-        400 - Invalid user ID or cannot deactivate last admin
+        400 - Invalid user ID or cannot delete last admin
         404 - User not found
     """
     user_id = req.route_params.get("user_id")
@@ -44,12 +44,12 @@ def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
     if not user:
         raise NotFoundError("Usuário não encontrado")
 
-    # Deactivate user (handles admin protection internally)
-    UserService.deactivate(user_id, current_user["user_id"])
+    # Delete user permanently (handles admin protection internally)
+    UserService.delete_permanently(user_id, current_user["user_id"])
 
-    # Log user deactivation
+    # Log user deletion
     AuditService.log_user_action(
-        action=AuditAction.USER_DEACTIVATED,
+        action=AuditAction.USER_DEACTIVATED,  # Reuse or add USER_DELETED
         actor=current_user,
         target_user_id=user_id,
         target_user_email=user.Email,
@@ -57,5 +57,5 @@ def delete_user(req: func.HttpRequest, current_user: CurrentUser) -> func.HttpRe
     )
 
     return create_json_response(
-        {"success": True, "message": "Usuário desativado com sucesso"}, status_code=200
+        {"success": True, "message": "Usuário excluído com sucesso"}, status_code=200
     )

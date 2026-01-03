@@ -39,6 +39,7 @@ export function DocumentTypesList() {
   // Dialog states
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Form state
@@ -77,17 +78,23 @@ export function DocumentTypesList() {
   }
 
   async function handleToggleActive(type: DocumentType) {
+    if (type.is_active) {
+      setSelectedType(type);
+      setShowDeactivateDialog(true);
+      return;
+    }
+
     try {
-      if (type.is_active) {
-        await api.delete(`/document-types/${type.id}`);
-        toast.success(`Tipo "${type.name}" desativado!`);
-      } else {
-        await api.put(`/document-types/${type.id}`, { is_active: true });
-        toast.success(`Tipo "${type.name}" ativado!`);
-      }
+      await api.put(`/document-types/${type.id}`, { is_active: true });
+      toast.success(`Tipo "${type.name}" ativado!`);
       await loadDocumentTypes();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao alterar status';
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao alterar status'
+          : err instanceof Error
+            ? err.message
+            : 'Erro ao alterar status';
       toast.error(message);
     }
   }
@@ -156,6 +163,27 @@ export function DocumentTypesList() {
     }
   }
 
+  async function handleDeactivateConfirm() {
+    if (!selectedType) return;
+
+    try {
+      setSaving(true);
+      await api.put(`/document-types/${selectedType.id}`, { is_active: false });
+
+      toast.success(`Tipo "${selectedType.name}" desativado!`);
+      setShowDeactivateDialog(false);
+      await loadDocumentTypes();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao desativar tipo de documento'
+          : 'Erro ao desativar tipo de documento';
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleDeleteConfirm() {
     if (!selectedType) return;
 
@@ -163,14 +191,14 @@ export function DocumentTypesList() {
       setSaving(true);
       await api.delete(`/document-types/${selectedType.id}`);
 
-      toast.success(`Tipo "${selectedType.name}" desativado!`);
+      toast.success(`Tipo "${selectedType.name}" excluído permanentemente!`);
       setShowDeleteDialog(false);
       await loadDocumentTypes();
     } catch (err) {
       const message =
         err instanceof ApiError
-          ? (err.data?.error as string) || 'Erro ao desativar tipo de documento'
-          : 'Erro ao desativar tipo de documento';
+          ? (err.data?.error as string) || 'Erro ao excluir tipo de documento'
+          : 'Erro ao excluir tipo de documento';
       toast.error(message);
     } finally {
       setSaving(false);
@@ -280,6 +308,30 @@ export function DocumentTypesList() {
                             onClick={() => handleToggleActive(type)}
                           >
                             {type.is_active ? 'Desativar' : 'Ativar'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedType(type);
+                              setShowDeleteDialog(true);
+                            }}
+                            title="Excluir permanentemente"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4 text-red-500 hover:text-red-700"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
                           </Button>
                         </div>
                       </TableCell>
@@ -394,14 +446,44 @@ export function DocumentTypesList() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* Deactivate Confirmation Dialog */}
+      <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Desativar Tipo de Documento</DialogTitle>
             <DialogDescription>
               Tem certeza que deseja desativar o tipo "{selectedType?.name}"?
               Os números já gerados serão mantidos.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeactivateDialog(false)}
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeactivateConfirm}
+              disabled={saving}
+            >
+              {saving ? 'Desativando...' : 'Desativar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog (Hard Delete) */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir Tipo de Documento Permanentemente</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir permanentemente o tipo "{selectedType?.name}"?
+              Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
 
@@ -418,7 +500,7 @@ export function DocumentTypesList() {
               onClick={handleDeleteConfirm}
               disabled={saving}
             >
-              {saving ? 'Desativando...' : 'Desativar'}
+              {saving ? 'Excluindo...' : 'Excluir Permanentemente'}
             </Button>
           </DialogFooter>
         </DialogContent>
