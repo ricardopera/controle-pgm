@@ -11,6 +11,9 @@ azure-data-tables>=12.5.0
 PyJWT>=2.8.0
 bcrypt>=4.1.0
 
+# Workaround (Azure Functions Linux): evitar falhas de carregamento por incompatibilidade recente do cryptography
+cryptography==43.0.3
+
 # Validation & Serialization
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
