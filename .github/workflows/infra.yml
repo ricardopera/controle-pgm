@@ -77,10 +77,24 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
+            export EXIT_CODE=0
             az deployment group create \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --template-file infra/main.bicep \
-              --parameters infra/prod.bicepparam
+              --parameters infra/prod.bicepparam > deploy-output.txt 2>&1 || export EXIT_CODE=$?
+
+            python3 -c '
+            import os
+            try:
+                with open("deploy-output.txt", "r") as f:
+                    content = f.read()
+                msg = content[-2000:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                if os.environ.get("EXIT_CODE") != "0":
+                    print(f"::error title=Bicep Deployment Failed::{msg}")
+            except Exception as e:
+                print(f"::error title=Debug Script Failed::{str(e)}")
+            '
+            exit $EXIT_CODE
 
       - name: Get deployment outputs
         uses: azure/CLI@v2
