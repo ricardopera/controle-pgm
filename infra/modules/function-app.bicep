@@ -34,7 +34,7 @@ param appInsightsConnectionString string = ''
 
 // Resource names
 var functionAppName = '${baseName}-api-${environment}'
-var hostingPlanName = '${baseName}-plan-${environment}'
+var hostingPlanName = '${baseName}-plan-v2-${environment}'
 
 // Consumption Plan (Linux)
 resource hostingPlan 'Microsoft.Web/serverfarms@2023-12-01' = {

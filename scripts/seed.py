@@ -50,7 +50,7 @@ def seed_admin_user(service: TableServiceClient) -> None:
     admin_entity = {
         "PartitionKey": "USER",
         "RowKey": str(uuid4()),
-        "Email": "admin@pgm.itajai.sc.gov.br",
+        "Email": "admin@itajai.sc.gov.br",
         "Name": "Administrador PGM",
         "PasswordHash": hash_password(default_password),
         "Role": "admin",
@@ -62,7 +62,7 @@ def seed_admin_user(service: TableServiceClient) -> None:
     
     table.create_entity(admin_entity)
     print(f"✅ Admin user created")
-    print(f"   Email: admin@pgm.itajai.sc.gov.br")
+    print(f"   Email: admin@itajai.sc.gov.br")
     print(f"   Password: {default_password}")
     print(f"   ⚠️  Please change the password on first login!")
 
