@@ -307,3 +307,34 @@ class UserService:
             )
 
         return UserService.update(user_id, {"Role": "user"})
+
+    @staticmethod
+    def delete_permanently(user_id: str, current_admin_id: str) -> None:
+        """Delete a user permanently (Hard Delete).
+
+        Args:
+            user_id: User's unique ID.
+            current_admin_id: ID of the admin performing the action.
+
+        Raises:
+            NotFoundError: If user not found.
+            ForbiddenError: If trying to delete self or last admin.
+        """
+        if user_id == current_admin_id:
+            raise ForbiddenError("Não é possível excluir a si mesmo")
+
+        user = UserService.get_by_id(user_id)
+        if not user:
+            raise NotFoundError("Usuário não encontrado")
+
+        # Check if this is the last active admin
+        if user.Role == "admin":
+            all_users = UserService.list_all()
+            active_admins = [
+                u for u in all_users if u.Role == "admin" and u.IsActive and u.RowKey != user_id
+            ]
+            if not active_admins:
+                raise ForbiddenError("Não é possível excluir o último administrador ativo")
+
+        table = get_users_table()
+        table.delete_entity(partition_key="USER", row_key=user_id)

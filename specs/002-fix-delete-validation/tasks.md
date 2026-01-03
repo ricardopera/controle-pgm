@@ -98,6 +98,26 @@
 
 ---
 
+## Phase 7: UI Improvements (Confirmation Dialogs)
+
+**Purpose**: Garantir que a desativação exija confirmação explícita conforme especificação
+
+- [X] T015 [US1] Modificar `handleToggleActive` em `UsersList.tsx` para abrir `showDeactivateDialog` ao invés de chamar API diretamente
+- [X] T016 [US2] Modificar `handleToggleActive` em `DocumentTypesList.tsx` para abrir `showDeleteDialog` ao invés de chamar API diretamente
+
+---
+
+## Phase 8: Hard Delete Implementation
+
+**Purpose**: Implementar exclusão física (Hard Delete) separada da desativação
+
+- [X] T017 [Backend] Implementar `delete_permanently` em `UserService` e `DocumentTypeService`
+- [X] T018 [Backend] Atualizar endpoints `DELETE` para usar `delete_permanently` (Hard Delete)
+- [X] T019 [Frontend] Atualizar `UsersList.tsx`: Adicionar botão "Lixeira" para Hard Delete e manter "Olho" para Desativar (usando PUT)
+- [X] T020 [Frontend] Atualizar `DocumentTypesList.tsx`: Adicionar botão "Lixeira" para Hard Delete e manter "Desativar" (usando PUT)
+
+---
+
 ## Dependencies
 
 ```

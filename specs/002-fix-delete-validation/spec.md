@@ -70,6 +70,27 @@ Quando um usuário tenta gerar um número para um tipo de documento que foi desa
 - O que acontece se a lista de tipos de documentos for recarregada após uma desativação?
   - Tipos inativos não devem aparecer na lista de geração de números, mas devem aparecer na lista de administração
 
+### User Story 4 - Excluir Usuário Permanentemente (Priority: P2)
+
+Um administrador precisa excluir permanentemente um usuário do sistema (Hard Delete).
+
+**Why this priority**: Necessário para limpeza de dados e conformidade com LGPD.
+
+**Acceptance Scenarios**:
+
+1. **Given** um usuário existe, **When** o administrador clica no botão de excluir (lixeira) e confirma, **Then** o registro é removido fisicamente do banco de dados.
+
+### User Story 5 - Excluir Tipo de Documento Permanentemente (Priority: P2)
+
+Um administrador precisa excluir permanentemente um tipo de documento que foi criado por engano.
+
+**Why this priority**: Manter o cadastro limpo de erros de digitação ou testes.
+
+**Acceptance Scenarios**:
+
+1. **Given** um tipo de documento existe, **When** o administrador clica em excluir e confirma, **Then** o registro é removido fisicamente.
+2. **Given** um tipo de documento já possui números gerados, **When** tenta-se excluir, **Then** o sistema impede a exclusão (se houver validação de integridade).
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

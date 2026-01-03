@@ -49,6 +49,7 @@ export function UsersList() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [showTempPasswordDialog, setShowTempPasswordDialog] = useState(false);
 
@@ -104,14 +105,15 @@ export function UsersList() {
   }
 
   async function handleToggleActive(user: User) {
+    if (user.is_active) {
+      setSelectedUser(user);
+      setShowDeactivateDialog(true);
+      return;
+    }
+
     try {
-      if (user.is_active) {
-        await api.delete(`/users/${user.id}`);
-        toast.success(`Usuário "${user.name}" desativado!`);
-      } else {
-        await api.put(`/users/${user.id}`, { is_active: true });
-        toast.success(`Usuário "${user.name}" ativado!`);
-      }
+      await api.put(`/users/${user.id}`, { is_active: true });
+      toast.success(`Usuário "${user.name}" ativado!`);
       await loadUsers();
     } catch (err) {
       const message =
@@ -204,7 +206,7 @@ export function UsersList() {
 
     try {
       setSaving(true);
-      await api.delete(`/users/${selectedUser.id}`);
+      await api.put(`/users/${selectedUser.id}`, { is_active: false });
 
       toast.success(`Usuário "${selectedUser.name}" desativado!`);
       setShowDeactivateDialog(false);
@@ -214,6 +216,27 @@ export function UsersList() {
         err instanceof ApiError
           ? (err.data?.error as string) || 'Erro ao desativar usuário'
           : 'Erro ao desativar usuário';
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteConfirm() {
+    if (!selectedUser) return;
+
+    try {
+      setSaving(true);
+      await api.delete(`/users/${selectedUser.id}`);
+
+      toast.success(`Usuário "${selectedUser.name}" excluído permanentemente!`);
+      setShowDeleteDialog(false);
+      await loadUsers();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? (err.data?.error as string) || 'Erro ao excluir usuário'
+          : 'Erro ao excluir usuário';
       toast.error(message);
     } finally {
       setSaving(false);
@@ -397,7 +420,7 @@ export function UsersList() {
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                className="h-4 w-4"
+                                className="h-4 w-4 text-orange-500 hover:text-orange-700"
                               >
                                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                                 <line x1="1" y1="1" x2="23" y2="23" />
@@ -411,12 +434,36 @@ export function UsersList() {
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                className="h-4 w-4"
+                                className="h-4 w-4 text-green-600 hover:text-green-800"
                               >
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                 <circle cx="12" cy="12" r="3" />
                               </svg>
                             )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowDeleteDialog(true);
+                            }}
+                            title="Excluir permanentemente"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4 text-red-500 hover:text-red-700"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
                           </Button>
                         </div>
                       </TableCell>
@@ -595,6 +642,32 @@ export function UsersList() {
               disabled={saving}
             >
               {saving ? 'Desativando...' : 'Desativar Usuário'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog (Hard Delete) */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir Usuário Permanentemente</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir permanentemente o usuário{' '}
+              <strong>{selectedUser?.name}</strong>? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={saving}
+            >
+              {saving ? 'Excluindo...' : 'Excluir Permanentemente'}
             </Button>
           </DialogFooter>
         </DialogContent>
