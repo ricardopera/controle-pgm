@@ -150,3 +150,9 @@ temp/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Azurite local storage
+__azurite_db_*.json
+__blobstorage__/
+__queuestorage__/
+AzuriteConfig
